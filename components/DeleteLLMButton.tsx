@@ -6,9 +6,12 @@ import { useRouter } from 'next/navigation';
 export default function DeleteLLMButton({ id, name }: { id: string, name: string }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [confirming, setConfirming] = useState(false);
 
     const handleDelete = async () => {
-        if (!confirm(`Are you sure you want to delete ${name}? This will remove all associated votes.`)) {
+        if (!confirming) {
+            setConfirming(true);
+            setTimeout(() => setConfirming(false), 3000); // Reset after 3s
             return;
         }
 
@@ -21,13 +24,13 @@ export default function DeleteLLMButton({ id, name }: { id: string, name: string
             if (res.ok) {
                 router.refresh();
             } else {
-                alert('Failed to delete LLM');
+                console.error('Failed to delete LLM');
             }
         } catch (error) {
-            console.error(error);
-            alert('Error deleting LLM');
+            console.error('Error deleting LLM', error);
         } finally {
             setLoading(false);
+            setConfirming(false);
         }
     };
 
@@ -35,9 +38,12 @@ export default function DeleteLLMButton({ id, name }: { id: string, name: string
         <button
             onClick={handleDelete}
             disabled={loading}
-            className="text-red-400 hover:text-red-300 transition-colors text-sm font-semibold px-3 py-1 rounded hover:bg-red-500/10"
+            className={`transition-all text-sm font-semibold px-3 py-1 rounded 
+                ${confirming
+                    ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
+                    : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}
         >
-            {loading ? 'Deleting...' : 'Delete'}
+            {loading ? 'Deleting...' : confirming ? 'Confirm?' : 'Delete'}
         </button>
     );
 }

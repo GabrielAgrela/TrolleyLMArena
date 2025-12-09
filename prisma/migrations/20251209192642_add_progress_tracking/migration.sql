@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "LLM" ADD COLUMN     "completedProblems" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "totalProblems" INTEGER NOT NULL DEFAULT 0;

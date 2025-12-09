@@ -29,6 +29,10 @@ model LLM {
   // Optional reasoning effort (low, medium, high)
   reasoningEffort String?
 
+  // Progress tracking
+  totalProblems     Int @default(0)
+  completedProblems Int @default(0)
+
   votes     Vote[]
 }
 
@@ -48,5 +52,8 @@ model Vote {
   
   choice    String
   reasoning String?
+  principles String[]
+  assumptions String?
+  requestPayload String? @db.Text
   createdAt DateTime @default(now())
 }

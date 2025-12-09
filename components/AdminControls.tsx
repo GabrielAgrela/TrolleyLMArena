@@ -10,6 +10,7 @@ export default function AdminControls() {
     const [name, setName] = useState('');
     const [reasoningEffort, setReasoningEffort] = useState('default');
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,17 +24,18 @@ export default function AdminControls() {
             });
 
             if (res.ok) {
-                alert('Run started successfully!');
+                setStatus({ type: 'success', message: 'Run started successfully!' });
                 setModelId('');
                 setName('');
                 setReasoningEffort('default');
                 router.refresh();
+                setTimeout(() => setStatus({ type: null, message: '' }), 3000);
             } else {
-                alert('Failed to start run.');
+                setStatus({ type: 'error', message: 'Failed to start run.' });
             }
         } catch (err) {
             console.error(err);
-            alert('Error starting run.');
+            setStatus({ type: 'error', message: 'Error starting run.' });
         } finally {
             setLoading(false);
         }
@@ -85,6 +87,12 @@ export default function AdminControls() {
                 >
                     {loading ? 'Starting Run...' : 'Start Evaluation'}
                 </button>
+                {status.message && (
+                    <div className={`text-center text-sm p-3 rounded-lg ${status.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                        {status.message}
+                    </div>
+                )}
             </form>
         </div>
     );
