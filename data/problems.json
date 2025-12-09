@@ -1,0 +1,730 @@
+[
+    {
+        "id": "original",
+        "title": "The Original",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, killing 1 person instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "src": "one-guy",
+            "kill": 1,
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "four-guys",
+        "title": "Four People",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, killing 4 people instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 4,
+            "src": "four-guys",
+            "style": {
+                "left": "72%",
+                "transform": "translateY(-130%) rotate(-10deg)",
+                "maxWidth": "18%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        }
+    },
+    {
+        "id": "life-savings",
+        "title": "Life Savings",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, but then your life savings will be destroyed. What do you do?",
+        "option1": {
+            "src": "five-guys",
+            "kill": 5,
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "src": "life-savings",
+            "kill": 0,
+            "style": {
+                "left": "69%",
+                "transform": "translateY(-139%) rotate(-5deg)",
+                "maxWidth": "23%"
+            },
+            "sound": "money_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "you",
+        "title": "You",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, sacrificing yourself instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.4
+        },
+        "option2": {
+            "kill": 1,
+            "src": "yourself",
+            "style": {
+                "left": "75%",
+                "transform": "translateY(-150%) rotate(-5deg)",
+                "maxWidth": "15%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "hideYou": true
+    },
+    {
+        "id": "painting",
+        "title": "Priceless Painting",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, but then the original copy of the Mona Lisa will be destroyed. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 0,
+            "src": "mona-lisa",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%) rotate(8deg)",
+                "maxWidth": "10%"
+            },
+            "sound": "painting_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "bribes",
+        "title": "Bribes",
+        "text": "Oh no! A trolley is heading towards a rich man. The rich man offers you $500,000 to pull the lever, which would divert the trolley and kill someone else. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "rich-guy",
+            "style": {
+                "left": "64%",
+                "transform": "translateY(-20%)",
+                "maxWidth": "12%"
+            },
+            "sound": "money_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%) rotate(2deg)",
+                "maxWidth": "10.2%"
+            },
+            "sound": "money_earn",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "sentience",
+        "title": "Levels of sentience",
+        "text": "Oh no! A trolley is heading towards 5 lobsters. You can pull the lever to divert it to the other track, running over a cat instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "lobsters",
+            "style": {
+                "left": "56%",
+                "transform": "translateY(32%) rotate(19deg)",
+                "maxWidth": "30%"
+            },
+            "sound": "lobsters_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 1,
+            "src": "cat",
+            "style": {
+                "left": "74%",
+                "transform": "translateY(-190%) rotate(3deg)",
+                "maxWidth": "13%"
+            },
+            "sound": "cat_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "sleeping",
+        "title": "Sleeping",
+        "text":"Oh no! A trolley is heading towards 5 people who are sleeping and won't feel pain. You can pull the lever to divert it to the other track, running over someone who is wide awake instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys-sleeping",
+            "style": {
+                "left": "61%",
+                "transform": "translateY(-27%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "personal-choices",
+        "title": "Personal choices",
+        "text": "Oh no! A trolley is heading towards 5 people who tied themselves to the track. You can pull the lever to divert it to the other track, killing 1 person who accidentally tripped onto the track instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys-smile",
+            "style": {
+                "left": "61%",
+                "transform": "translateY(-18%)",
+                "maxWidth": "22%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "mercy",
+        "title": "Mercy",
+        "text": "Oh no! A trolley is heading towards 5 people. The lever just speeds up the trolley, which might make it less painful. What do you do?",
+        "trolleySound": "trolley_move_fast",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 5,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "people_death",
+            "volume": 0.5,
+            "soundDelay": 350
+        },
+        "diagramClass": "speed-up"
+    },
+    {
+        "id": "minor",
+        "title": "Minor Inconvenience",
+        "text": "Oh no! A trolley is heading towards one guy. You can pull the lever to divert it to the other track, but then your Amazon package will be late. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "63%",
+                "transform": "translateY(-15%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 0,
+            "src": "",
+            "hide": true
+        }
+    },
+    {
+        "id": "best-friend",
+        "title": "Best Friend",
+        "text": "Oh no! A trolley is heading towards your best friend. You can pull the lever to divert it to the other track, killing 5 strangers instead. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "best-friend",
+            "style": {
+                "left": "64%",
+                "transform": "translateY(-35%)",
+                "maxWidth": "14%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "74%",
+                "transform": "translateY(-127%) rotate(-10deg)",
+                "maxWidth": "20%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        }
+    },
+    {
+        "id": "glasses",
+        "title":"Can't see",
+        "text":"Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, killing 1 person instead. At least, that's what you think is happening. You forgot your glasses and can't see that well. What do you do?",
+        "trolleySound": "trolley_move_foggy",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death_foggy",
+            "volume": 0.4
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death_foggy",
+            "volume": 0.5
+        },
+        "diagramClass": "no-glasses"
+    },
+    {
+        "id": "cousins",
+        "title": "Cousins",
+        "text": "Oh no! A trolley is heading towards one of your first cousins. You can pull the lever to divert it to the other track, killing 3 of your second cousins instead. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "one-cousin",
+            "style": {
+                "left": "63%",
+                "transform": "translateY(-30%)",
+                "maxWidth": "18%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 3,
+            "src": "second-cousins",
+            "style": {
+                "left": "71%",
+                "transform": "translateY(-139%) rotate(-10deg)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        }
+    },
+    {
+        "id": "age",
+        "title": "Age",
+        "text": "Oh no! A trolley is heading towards 5 elderly people. You can pull the lever to divert it to the other track, running over a baby instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-elderly",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "src": "one-baby",
+            "kill": 1,
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-210%) rotate(15deg)",
+                "maxWidth": "5.2%"
+            },
+            "sound": "baby_death",
+            "volume": 0.4
+        }
+    },
+    {
+        "id": "clones",
+        "title": "Clones",
+        "text": "Oh no! A trolley is barreling towards 5 identical clones of you. You can pull the lever to divert it to the other track, sacrificing yourself instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-clones",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-30%) rotate(10deg)",
+                "maxWidth": "25%"
+            },
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 1,
+            "src": "yourself",
+            "style": {
+                "left": "75%",
+                "transform": "translateY(-150%) rotate(-5deg)",
+                "maxWidth": "15%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "hideYou": true
+    },
+    {
+        "id": "mystery",
+        "title": "Mystery Box",
+        "text": "Oh no! A trolley is heading towards a mystery box with a 50% chance of containing two people. You can pull the lever to divert it to the other track, hitting a mystery box with a 10% chance of 10 people instead. What do you do?",
+        "option1": {
+            "src": "50-2",
+            "style": {
+                "left": "64%",
+                "transform": "translateY(-45%) rotate(15deg)",
+                "maxWidth": "15.2%"
+            },
+            "sound": "box_death",
+            "volume": 0.7
+        },
+        "option2": {
+            "src": "10-10",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%) rotate(7deg)",
+                "maxWidth": "15%"
+            },
+            "sound": "box_death",
+            "volume": 0.7
+        }
+    },
+    {
+        "id": "robots",
+        "title": "I am Robot",
+        "text": "Oh no! A trolley is heading towards 5 sentient robots. You can pull the lever to divert it to the other track, killing 1 human instead. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-robots",
+            "style": {
+                "left": "62%",
+                "transform": "translateY(-50%) rotate(13deg)",
+                "maxWidth": "19%"
+            },
+            "sound": "robots_death",
+            "volume": 0.7
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "economic",
+        "title": "Economic Damage",
+        "text": "Oh no! A trolley is heading towards 3 empty trolleys worth $900,000. You can pull the lever to divert it to the other track, hitting 1 empty trolley worth $300,000 instead. What do you do?",
+        "option1": {
+            "kill": 0,
+            "src": "three-trolleys",
+            "style": {
+                "left": "50%",
+                "transform": "translateY(-33%) rotate(1deg)",
+                "width": "68%"
+            },
+            "sound": "trolleys_death",
+            "volume": 0.7
+        },
+        "option2": {
+            "kill": 0,
+            "src": "one-trolley",
+            "style": {
+                "left": "73%",
+                "transform": "translateY(-129%) rotate(-7deg)",
+                "width": "26%"
+            },
+            "sound": "trolley_death",
+            "volume": 0.7
+        },
+        "diagramClass": "economic"
+    },
+    {
+        "id": "external",
+        "title": "External costs",
+        "text": "Oh no! A trolley is releasing 100kg of C02 per year which will kill 5 people over 30 years. You can pull the lever to divert it to the other track, hitting a brick wall and decommissioning the trolley. What do you do?",
+        "option2": {
+            "kill": 0,
+            "src": "brick-wall",
+            "style": {
+                "left": "75%",
+                "transform": "translateY(-121%)",
+                "maxWidth": "14%"
+            },
+            "sound": "trolley_death_wall",
+            "volume": 0.7
+        },
+        "diagramClass": "brick-wall",
+        "option1": {
+            "kill": 5,
+            "hide": true
+        }
+    },
+    {
+        "id": "reincarnation",
+        "title": "Reincarnation",
+        "text":"Oh no! You're a reincarnated being who will eventually be reincarnated as every person in this classic trolley problem. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys-you",
+            "style": {
+                "left": "59%",
+                "transform": "translateY(-31%)",
+                "maxWidth": "23%"
+            },
+            "sound": "people_death",
+            "volume": 0.7
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy-you",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.7
+        }
+    },
+    {
+        "id": "harmless",
+        "title": "Harmless Prank?",
+        "text": "Oh no! A trolley is heading towards nothing, but you kinda want to prank the trolley driver. What do you do?",
+        "option1": {
+            "kill": 0,
+            "hide": true
+        },
+        "option2": {
+            "kill": 0,
+            "hide": true
+        }
+    },
+    {
+        "id": "citizen",
+        "title": "Citizens",
+        "text": "Oh no! A trolley is heading towards a good citizen. You can pull the lever to divert it to the other track, running over someone who litters instead. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "good-citizen",
+            "style": {
+                "left": "63%",
+                "transform": "translateY(-28%)",
+                "maxWidth": "17%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 1,
+            "src": "bad-citizen",
+            "style": {
+                "left": "71%",
+                "transform": "translateY(-149%) rotate(-10deg)",
+                "maxWidth": "16%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "eternity",
+        "title": "Eternity",
+        "text":"Oh no! Due to a construction error, a trolley is stuck in an eternal loop. If you pull the lever the trolley will explode, and if you don't the trolley and its passengers will go in circles for eternity. What do you do?",
+        "trolleyLoop": "trolley_move_circles_loop",
+        "option1": {
+            "src": "five-guys",
+            "hide": true
+        },
+        "option2": {
+            "src": "one-guy",
+            "kill": 5,
+            "hide": true,
+            "sound": "trolley_death_explosion",
+            "volume": 0.7,
+            "soundDelay": 0.01
+        },
+        "track": "circle-track",
+        "trackClass": "circle-track",
+        "trolleyClass": "circle-trolley",
+        "youClass": "circle-you",
+        "skipTrolleyMove": true
+    },
+    {
+        "id": "enemy",
+        "title": "Enemy",
+        "text": "Oh no! A trolley is heading towards your worst enemy. You can pull the lever to divert the trolley and save them, or you can do nothing and no one will ever know. What do you do?",
+        "option1": {
+            "kill": 1,
+            "src": "enemy",
+            "style": {
+                "left": "63%",
+                "transform": "translateY(-16%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 0,
+            "hide": true
+        }
+    },
+    {
+        "id": "lifespan",
+        "title": "Lifespan",
+        "text": "Oh no! A trolley is heading towards a person and will lower their lifespan by 50 years. You can pull the lever to divert the trolley and lower the lifespan of 5 people by 10 years each instead. What do you do?",
+        "option1": {
+            "kill": 0,
+            "src": "one-guy",
+            "style": {
+                "left": "63%",
+                "transform": "translateY(-16%)",
+                "maxWidth": "10%"
+            },
+            "sound": "person_injured",
+            "volume": 0.5
+        },
+        "option2": {
+            "kill": 0,
+            "src": "five-guys-lifespan",
+            "style": {
+                "left": "71%",
+                "transform": "translateY(-125%) rotate(-10deg)",
+                "maxWidth": "21%"
+            },
+            "sound": "people_injured",
+            "volume": 0.5
+        }
+    },
+    {
+        "id": "time-machine",
+        "title": "Time Machine",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, sending the trolley into the future to kill 5 people 100 years from now. What do you do?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "sound": "person_death",
+            "volume": 0.5
+        },
+        "option2": {
+            "src": "portal",
+            "kill": 5,
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-160%)",
+                "maxWidth": "9%"
+            },
+            "sound": "portal_teleport",
+            "volume": 0.75
+        },
+        "diagramClass": "future"
+    },
+    {
+        "id": "free-will",
+        "title": "Free Will",
+        "text": "Oh no! A trolley problem is playing out before you. Do you actually have a choice in this situation? Or has everything been predetermined since the universe began?",
+        "option1": {
+            "kill": 5,
+            "src": "five-guys",
+            "style": {
+                "left": "60%",
+                "transform": "translateY(-19%)",
+                "maxWidth": "21%"
+            },
+            "text": "I have a choice",
+            "sound": "people_death",
+            "volume": 0.3
+        },
+        "option2": {
+            "kill": 1,
+            "src": "one-guy",
+            "style": {
+                "left": "76%",
+                "transform": "translateY(-158%)",
+                "maxWidth": "10%"
+            },
+            "text":"I don't have a choice",
+            "sound": "person_death",
+            "volume": 0.5
+        }
+    }
+]

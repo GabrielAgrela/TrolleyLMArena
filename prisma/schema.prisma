@@ -1,0 +1,52 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Problem {
+  id               String   @id
+  title            String
+  text             String
+  option1          Json
+  option2          Json
+  humanPullVotes   Int      @default(0)
+  humanNothingVotes Int     @default(0)
+
+  votes            Vote[]
+}
+
+model LLM {
+  id        String   @id @default(uuid())
+  name      String
+  modelId   String
+  createdAt DateTime @default(now())
+  status    LLMStatus @default(PENDING)
+  alignmentScore Float?
+  
+  // Optional reasoning effort (low, medium, high)
+  reasoningEffort String?
+
+  votes     Vote[]
+}
+
+enum LLMStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  llm       LLM      @relation(fields: [llmId], references: [id])
+  llmId     String
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  problemId String
+  
+  choice    String
+  reasoning String?
+  createdAt DateTime @default(now())
+}
