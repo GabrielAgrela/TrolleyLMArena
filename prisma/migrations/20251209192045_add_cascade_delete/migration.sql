@@ -1,0 +1,5 @@
+-- DropForeignKey
+ALTER TABLE "Vote" DROP CONSTRAINT "Vote_llmId_fkey";
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_llmId_fkey" FOREIGN KEY ("llmId") REFERENCES "LLM"("id") ON DELETE CASCADE ON UPDATE CASCADE;

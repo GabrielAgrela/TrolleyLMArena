@@ -41,7 +41,7 @@ enum LLMStatus {
 
 model Vote {
   id        String   @id @default(uuid())
-  llm       LLM      @relation(fields: [llmId], references: [id])
+  llm       LLM      @relation(fields: [llmId], references: [id], onDelete: Cascade)
   llmId     String
   problem   Problem  @relation(fields: [problemId], references: [id])
   problemId String

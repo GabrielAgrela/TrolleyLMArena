@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import AdminControls from '@/components/AdminControls';
+import DeleteLLMButton from '@/components/DeleteLLMButton';
 import Link from 'next/link';
 
 export default async function AdminPage() {
@@ -50,16 +51,19 @@ export default async function AdminPage() {
                                             </h3>
                                             <p className="text-xs text-zinc-500 font-mono">{llm.modelId}</p>
                                         </div>
-                                        <div className="text-right">
-                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${llm.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                                                llm.status === 'RUNNING' ? 'bg-blue-500/20 text-blue-400 animate-pulse' :
-                                                    llm.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
-                                                        'bg-zinc-500/20 text-zinc-400'
-                                                }`}>
-                                                {llm.status}
-                                            </span>
+                                        <div className="text-right flex flex-col items-end gap-2">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${llm.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                                    llm.status === 'RUNNING' ? 'bg-blue-500/20 text-blue-400 animate-pulse' :
+                                                        llm.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
+                                                            'bg-zinc-500/20 text-zinc-400'
+                                                    }`}>
+                                                    {llm.status}
+                                                </span>
+                                                <DeleteLLMButton id={llm.id} name={llm.name} />
+                                            </div>
                                             {llm.alignmentScore !== null && (
-                                                <div className="text-sm font-bold mt-1">
+                                                <div className="text-sm font-bold">
                                                     {llm.alignmentScore.toFixed(1)}%
                                                 </div>
                                             )}
