@@ -8,6 +8,7 @@ type Vote = {
     llm: { name: string };
     choice: string;
     reasoning: string | null;
+    principles: string[];
 };
 
 type Problem = {
@@ -17,9 +18,25 @@ type Problem = {
     humanNothingVotes: number;
 };
 
-export default function TrolleyScene({ problem, votes }: { problem: Problem, votes: Vote[] }) {
+import { useRouter } from 'next/navigation';
+
+export default function TrolleyScene({ problem, votes, allProblems }: { problem: Problem, votes: Vote[], allProblems: { id: string, title: string }[] }) {
+    const router = useRouter();
     const [hoverState, setHoverState] = useState<{ vote: Vote, y: number } | null>(null);
     const [windowHeight, setWindowHeight] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [transitionDst, setTransitionDst] = useState<string | null>(null);
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+
+    const handleNextProblem = () => {
+        setTransitionDst(null);
+        setIsTransitioning(true);
+    };
+
+    const handleNavigate = (path: string) => {
+        setTransitionDst(path);
+        setIsTransitioning(true);
+    };
 
     // Update window height
     React.useEffect(() => {
@@ -39,7 +56,8 @@ export default function TrolleyScene({ problem, votes }: { problem: Problem, vot
         id: 'humanity',
         llm: { name: '👥 HUMANITY' },
         choice: humanChoice,
-        reasoning: `${Math.round((Math.max(problem.humanPullVotes, problem.humanNothingVotes) / (problem.humanPullVotes + problem.humanNothingVotes || 1)) * 100)}% of humans chose to ${humanChoice} provided with this problem.`
+        reasoning: `${Math.round((Math.max(problem.humanPullVotes, problem.humanNothingVotes) / (problem.humanPullVotes + problem.humanNothingVotes || 1)) * 100)}% of humans chose to ${humanChoice} provided with this problem.`,
+        principles: ["Human Intuition", "Democratic Consensus"]
     };
 
     if (humanChoice === 'pull') {
@@ -136,12 +154,109 @@ export default function TrolleyScene({ problem, votes }: { problem: Problem, vot
                 </div>
 
                 {/* Footer / Home Link */}
-                <div className="p-4 border-t-2 border-black bg-white">
-                    <a href="/" className="text-sm underline hover:text-blue-600 font-comic">← Back to Dashboard</a>
-                    <div className="mt-2">
-                        <a href="/browse" className="block w-full py-2 bg-black text-white text-center font-bold rounded hover:bg-zinc-800 transition-colors font-comic text-sm">Next Problem 🎲</a>
-                    </div>
+                <div className="p-4 border-t-2 border-black bg-white space-y-3">
+                    <button
+                        onClick={() => handleNavigate('/leaderboard')}
+                        disabled={isTransitioning}
+                        className="w-full py-3 bg-yellow-400 text-black font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all font-comic uppercase tracking-widest text-sm relative group overflow-hidden flex items-center justify-center disabled:cursor-not-allowed"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            <span>🏆</span> View Leaderboard <span>👑</span>
+                        </span>
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    </button>
+
+                    <button
+                        onClick={() => setIsSelectorOpen(true)}
+                        disabled={isTransitioning}
+                        className="w-full py-2 bg-white text-black font-bold rounded-xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all font-comic text-xs uppercase tracking-widest relative group overflow-hidden flex items-center justify-center disabled:cursor-not-allowed mb-2"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            Select Problem 🔎
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={handleNextProblem}
+                        disabled={isTransitioning}
+                        className="w-full py-3 bg-green-400 text-black font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all font-comic uppercase tracking-widest text-sm relative group overflow-hidden flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            Next Problem <span>🎲</span>
+                        </span>
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    </button>
                 </div>
+            </div>
+
+            {/* PROBLEM SELECTOR MODAL */}
+            <AnimatePresence>
+                {isSelectorOpen && (
+                    <motion.div
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSelectorOpen(false)}
+                    >
+                        <motion.div
+                            className="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_rgba(0,0,0,1)] w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6 border-b-2 border-black flex items-center justify-between bg-zinc-50">
+                                <h2 className="text-2xl font-black font-comic">Select a Problem</h2>
+                                <button onClick={() => setIsSelectorOpen(false)} className="text-2xl hover:scale-110 transition-transform">✖️</button>
+                            </div>
+                            <div className="overflow-y-auto p-4 space-y-2">
+                                {allProblems.map(p => (
+                                    <button
+                                        key={p.id}
+                                        onClick={() => {
+                                            setIsSelectorOpen(false);
+                                            handleNavigate(`/?problemId=${p.id}`);
+                                        }}
+                                        className={`w-full text-left p-4 rounded-xl border-2 border-black font-comic hover:bg-yellow-300 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all ${p.id === problem.id ? 'bg-yellow-100' : 'bg-white'}`}
+                                    >
+                                        <div className="font-bold text-lg">{p.title}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* IRIS TRANSITION OVERLAY */}
+            {/* Always rendered, animating the circle radius */}
+            <div className="fixed inset-0 z-[100] pointer-events-none">
+                <svg className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+                    <defs>
+                        <mask id="hole-mask">
+                            <rect width="100%" height="100%" fill="white" />
+                            <motion.circle
+                                cx="50%"
+                                cy="50%"
+                                fill="black"
+                                initial={{ r: 0 }}
+                                animate={{ r: isTransitioning ? 0 : "150%" }}
+                                transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                                onAnimationComplete={() => {
+                                    if (isTransitioning) {
+                                        if (transitionDst) {
+                                            router.push(transitionDst);
+                                        } else {
+                                            router.refresh();
+                                        }
+                                    }
+                                }}
+                            />
+                        </mask>
+                    </defs>
+                    <rect width="100%" height="100%" fill="black" mask="url(#hole-mask)" />
+                </svg>
             </div>
 
             {/* Main Stage - The Sketch */}
@@ -193,9 +308,22 @@ export default function TrolleyScene({ problem, votes }: { problem: Problem, vot
                                                 <div className="text-sm font-bold text-zinc-500 uppercase tracking-wide mb-1">
                                                     {hoverState.vote.llm.name} says:
                                                 </div>
-                                                <p className="text-lg md:text-xl font-comic leading-snug">
+                                                <p className="text-sm md:text-base font-comic leading-tight">
                                                     "{hoverState.vote.reasoning}"
                                                 </p>
+
+                                                {hoverState.vote.principles && hoverState.vote.principles.length > 0 && (
+                                                    <div className="mt-4 pt-4 border-t-2 border-dashed border-zinc-200">
+                                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Core Principles:</div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {hoverState.vote.principles.map((principle, i) => (
+                                                                <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded text-xs font-bold font-comic shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+                                                                    {principle}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -328,7 +456,7 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
             {hoveredChoice && (
                 <text
                     x="600"
-                    y={isPull ? "200" : "400"}
+                    y={isPull ? "180" : "400"}
                     textAnchor="middle"
                     className="font-comic font-bold text-2xl uppercase fill-white stroke-black stroke-2"
                 >

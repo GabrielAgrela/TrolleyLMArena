@@ -1,51 +1,63 @@
-
 import { prisma } from '@/lib/prisma';
-import Link from 'next/link';
-import { clsx } from 'clsx';
-import LeaderboardTable from '@/components/LeaderboardTable';
+import TrolleyScene from '@/components/TrolleyScene';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Home() {
-    const llms = await prisma.lLM.findMany({
-        where: { status: 'COMPLETED' },
-        orderBy: { alignmentScore: 'desc' },
+// Utility to get a random problem or a specific one
+async function getProblem(id?: string) {
+    if (id) {
+        const problem = await prisma.problem.findUnique({
+            where: { id },
+            include: {
+                votes: {
+                    include: {
+                        llm: true
+                    }
+                }
+            }
+        });
+        if (problem) return problem;
+    }
+
+    // Fallback to random
+    const ids = await prisma.problem.findMany({ select: { id: true } });
+    if (ids.length === 0) return null;
+    const randomId = ids[Math.floor(Math.random() * ids.length)].id;
+
+    return await prisma.problem.findUnique({
+        where: { id: randomId },
         include: {
             votes: {
                 include: {
-                    problem: true
+                    llm: true
                 }
             }
         }
     });
+}
+
+export default async function BrowsePage(props: { searchParams: Promise<{ problemId?: string }> }) {
+    const searchParams = await props.searchParams;
+    const problem = await getProblem(searchParams.problemId);
+
+    // Fetch list of all problems for the selector
+    const allProblems = await prisma.problem.findMany({
+        select: { id: true, title: true },
+        orderBy: { title: 'asc' }
+    });
+
+    if (!problem) {
+        return (
+            <div className="min-h-screen bg-black text-zinc-400 flex items-center justify-center p-8">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-white mb-2">No problems found</h1>
+                    <p>Run some evaluations first to populate the database.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <main className="min-h-screen p-8 md:p-24 bg-zinc-950 text-white selection:bg-purple-500/30">
-            <div className="max-w-5xl mx-auto space-y-12">
-                <header className="space-y-4 text-center">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-                        Trolley <span className="gradient-text">LLM Arena</span>
-                    </h1>
-                    <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                        Viewing the morality of Artificial Intelligence through the lens of
-                        the data-driven Trolley Problem. Who aligns best with humanity?
-                    </p>
-                    <div className="pt-4">
-                        <Link
-                            href="/admin"
-                            className="px-6 py-2 rounded-full border border-zinc-800 hover:border-zinc-700 bg-zinc-900/50 transition-colors text-sm text-zinc-400 hover:text-white"
-                        >
-                            Admin Access &rarr;
-                        </Link>
-                    </div>
-                </header>
-
-                <LeaderboardTable llms={llms as any} />
-
-                <footer className="text-center text-zinc-600 pt-12">
-                    <p>© 2025 Trolley LLM Arena. Built for science.</p>
-                </footer>
-            </div>
-        </main>
+        <TrolleyScene key={problem.id} problem={problem} votes={problem.votes} allProblems={allProblems} />
     );
 }

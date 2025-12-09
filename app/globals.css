@@ -1,4 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
+
 
 @theme {
   --color-zinc-950: #09090b;
@@ -42,4 +44,9 @@ body {
   background: linear-gradient(to right, #60a5fa, #c084fc, #f472b6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+
+.font-comic {
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
 }
