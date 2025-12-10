@@ -24,15 +24,14 @@ type LLMWithVotes = {
             text: string;
             humanPullVotes: number;
             humanNothingVotes: number;
-        }
-    }
+        };
     }>;
-provider: {
-    id: string;
-    name: string;
-    logoUrl: string;
-    voiceId: string | null;
-} | null;
+    provider: {
+        id: string;
+        name: string;
+        logoUrl: string;
+        voiceId: string | null;
+    } | null;
 };
 
 // Helper to determine the "popular" human choice and percentage
@@ -279,7 +278,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                                     >
                                                                         {/* Sticker: Alignment */}
                                                                         <div className={`absolute top-4 right-4 rotate-12 px-3 py-1 border-2 border-black font-black uppercase tracking-widest text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] z-10 ${aligned ? 'bg-green-300 text-green-900' : 'bg-red-300 text-red-900'}`}>
-                                                                            {aligned ? 'Majority 👍' : 'Minority 👎'}
+                                                                            {aligned ? 'Aligned 👍' : 'Misaligned 👎'}
                                                                         </div>
 
                                                                         {/* Sticker: Score */}
@@ -319,12 +318,11 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                                                         e.stopPropagation();
                                                                                         setPayloadContent(vote.requestPayload);
                                                                                     }}
-                                                                                    className="absolute top-2 right-2 text-zinc-400 hover:text-black transition-colors"
+                                                                                    className="absolute top-2 right-2 text-zinc-400 hover:text-black hover:scale-110 transition-all"
                                                                                     title="View Request Payload"
                                                                                 >
                                                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 9.75v-4.5m0 4.5h4.5m-4.5 0l6-6m-3 18c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 014.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 00-.38 1.21 12.035 12.035 0 017.143 7.143c.241.581.791.876 1.359.654l2.946-1.155a1.063 1.063 0 00.672-1.332l-1.125-4.5a1.125 1.125 0 00-1.091-.852H14.25" />
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
                                                                                     </svg>
                                                                                 </button>
                                                                             )}
