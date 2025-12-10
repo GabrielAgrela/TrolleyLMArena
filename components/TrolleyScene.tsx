@@ -5,32 +5,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 type Vote = {
     id: string;
-    llm: { name: string };
+    llm: {
+        name: string;
+        provider?: {
+            name: string;
+            logoUrl: string;
+        }
+    };
     choice: string;
     reasoning: string | null;
     principles: string[];
+    audioUrl?: string | null;
 };
 
 type Problem = {
+    id: string; // Added ID
     title: string;
     text: string;
     humanPullVotes: number;
     humanNothingVotes: number;
 };
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import TransitionIris from './TransitionIris';
 
 export default function TrolleyScene({ problem, votes, allProblems }: { problem: Problem, votes: Vote[], allProblems: { id: string, title: string }[] }) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [hoverState, setHoverState] = useState<{ vote: Vote, y: number } | null>(null);
     const [windowHeight, setWindowHeight] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [transitionDst, setTransitionDst] = useState<string | null>(null);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
+    // Reset transition when problem changes (using object ref to catch same-id refreshes)
+    React.useEffect(() => {
+        setIsTransitioning(false);
+    }, [problem]);
+
     const handleNextProblem = () => {
-        setTransitionDst(null);
-        setIsTransitioning(true);
+        // If we are viewing a specific problem, go back to random mode
+        if (searchParams.get('problemId')) {
+            handleNavigate('/');
+        } else {
+            // Otherwise just reroll
+            setTransitionDst(null);
+            setIsTransitioning(true);
+        }
     };
 
     const handleNavigate = (path: string) => {
@@ -54,10 +75,10 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     const humanChoice = problem.humanPullVotes > problem.humanNothingVotes ? 'pull' : 'nothing';
     const humanVote: Vote = {
         id: 'humanity',
-        llm: { name: '👥 HUMANITY' },
+        llm: { name: 'HUMANITY' }, // Accessing name directly for logic, sidebar adds icon via checking isHuman
         choice: humanChoice,
         reasoning: `${Math.round((Math.max(problem.humanPullVotes, problem.humanNothingVotes) / (problem.humanPullVotes + problem.humanNothingVotes || 1)) * 100)}% of humans chose to ${humanChoice} provided with this problem.`,
-        principles: ["Human Intuition", "Democratic Consensus"]
+        principles: [] // No principles for humanity
     };
 
     if (humanChoice === 'pull') {
@@ -72,9 +93,74 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             // Calculate center y relative to the viewport/container
             const y = rect.top + (rect.height / 2);
             setHoverState({ vote, y });
+
+            // Play audio if available
+            playAudio(vote.audioUrl);
         } else {
             setHoverState(null);
+            // Stop audio if exists
+            if (audioRef.current) {
+                saveCurrentProgress();
+                audioRef.current.pause();
+            }
         }
+    };
+
+    // Audio Logic
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const audioProgress = useRef<Record<string, number>>({});
+    const currentUrlRef = useRef<string | null>(null);
+    const [isMuted, setIsMuted] = useState(false);
+
+    const saveCurrentProgress = () => {
+        if (audioRef.current && currentUrlRef.current) {
+            audioProgress.current[currentUrlRef.current] = audioRef.current.currentTime;
+        }
+    };
+
+    // Handle mute state changes
+    React.useEffect(() => {
+        if (isMuted) {
+            if (audioRef.current) {
+                saveCurrentProgress();
+                audioRef.current.pause();
+            }
+        } else {
+            // Resume if we are currently hovering something with audio
+            if (hoverState?.vote.audioUrl) {
+                playAudio(hoverState.vote.audioUrl);
+            }
+        }
+    }, [isMuted, hoverState?.vote.audioUrl]); // Added hoverState.vote.audioUrl to dependencies
+
+    const playAudio = (url: string | null | undefined) => {
+        if (!url || isMuted) return;
+
+        // Save progress of currently playing audio (if any)
+        saveCurrentProgress();
+        if (audioRef.current) {
+            audioRef.current.pause();
+        }
+
+        const audio = new Audio(url);
+
+        // Restore progress if exists
+        const savedTime = audioProgress.current[url] || 0;
+        audio.currentTime = savedTime;
+
+        audioRef.current = audio;
+        currentUrlRef.current = url;
+
+        // Clean up progress when finished
+        audio.addEventListener('ended', () => {
+            if (audioProgress.current[url]) {
+                delete audioProgress.current[url];
+            }
+        });
+
+        audio.play()
+            .then(() => console.log("Audio playing:", url, "at", savedTime))
+            .catch(err => console.error("Audio playback failed:", err));
     };
 
     // Smart Positioning Logic
@@ -231,36 +317,30 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
             {/* IRIS TRANSITION OVERLAY */}
             {/* Always rendered, animating the circle radius */}
-            <div className="fixed inset-0 z-[100] pointer-events-none">
-                <svg className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-                    <defs>
-                        <mask id="hole-mask">
-                            <rect width="100%" height="100%" fill="white" />
-                            <motion.circle
-                                cx="50%"
-                                cy="50%"
-                                fill="black"
-                                initial={{ r: 0 }}
-                                animate={{ r: isTransitioning ? 0 : "150%" }}
-                                transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-                                onAnimationComplete={() => {
-                                    if (isTransitioning) {
-                                        if (transitionDst) {
-                                            router.push(transitionDst);
-                                        } else {
-                                            router.refresh();
-                                        }
-                                    }
-                                }}
-                            />
-                        </mask>
-                    </defs>
-                    <rect width="100%" height="100%" fill="black" mask="url(#hole-mask)" />
-                </svg>
-            </div>
+            {/* IRIS TRANSITION OVERLAY */}
+            <TransitionIris
+                isOpen={!isTransitioning}
+                onCloseComplete={() => {
+                    if (transitionDst) {
+                        router.push(transitionDst);
+                    } else {
+                        router.refresh();
+                    }
+                }}
+            />
 
             {/* Main Stage - The Sketch */}
             <div className="flex-1 relative flex flex-col">
+                {/* Mute Toggle */}
+                <button
+                    onClick={() => setIsMuted(!isMuted)}
+                    className="absolute top-4 right-4 z-50 p-3 bg-white border-2 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all"
+                    title={isMuted ? "Unmute Audio" : "Mute Audio"}
+                >
+                    <span className="text-xl filter grayscale-0">
+                        {isMuted ? "🔇" : "🔊"}
+                    </span>
+                </button>
                 {/* Problem Text Header */}
                 <div className="absolute top-0 left-0 right-0 p-8 text-center pointer-events-none z-10">
                     <h1 className="text-3xl md:text-4xl font-black font-comic mb-4">{problem.title}</h1>
@@ -301,12 +381,27 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                                     {/* Content Area - No Scroll, Full Height */}
                                     <div className="p-6 rounded-[2rem] w-full">
                                         <div className="flex items-start gap-4">
-                                            <div className="shrink-0 w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold text-xl">
-                                                {hoverState.vote.llm.name[0]}
-                                            </div>
+                                            {hoverState.vote.id === 'humanity' ? (
+                                                <div className="shrink-0 w-12 h-12 flex items-center justify-center text-4xl -mt-2">
+                                                    👥
+                                                </div>
+                                            ) : hoverState.vote.llm.provider?.logoUrl ? (
+                                                <div className="shrink-0 w-12 h-12 flex items-center justify-center">
+                                                    <img src={hoverState.vote.llm.provider.logoUrl} alt={hoverState.vote.llm.provider.name} className="w-full h-full object-contain" />
+                                                </div>
+                                            ) : (
+                                                <div className="shrink-0 w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold text-xl">
+                                                    {hoverState.vote.llm.name[0]}
+                                                </div>
+                                            )}
+
                                             <div>
                                                 <div className="text-sm font-bold text-zinc-500 uppercase tracking-wide mb-1">
-                                                    {hoverState.vote.llm.name} says:
+                                                    {hoverState.vote.id === 'humanity' ? (
+                                                        <span>HUMANITY SAYS {hoverState.vote.choice === 'pull' ? 'PULL' : 'DO NOTHING'}:</span>
+                                                    ) : (
+                                                        <span>{hoverState.vote.llm.name} says:</span>
+                                                    )}
                                                 </div>
                                                 <p className="text-sm md:text-base font-comic leading-tight">
                                                     "{hoverState.vote.reasoning}"
@@ -314,7 +409,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
                                                 {hoverState.vote.principles && hoverState.vote.principles.length > 0 && (
                                                     <div className="mt-4 pt-4 border-t-2 border-dashed border-zinc-200">
-                                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Core Principles:</div>
+                                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">My Core Principles:</div>
                                                         <div className="flex flex-wrap gap-2">
                                                             {hoverState.vote.principles.map((principle, i) => (
                                                                 <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded text-xs font-bold font-comic shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
@@ -358,12 +453,22 @@ function VoteItem({ vote, onHover }: { vote: Vote, onHover: (v: Vote | null, e?:
         <button
             onMouseEnter={(e) => onHover(vote, e)}
             onMouseLeave={() => onHover(null)}
-            className={`w-full text-left px-3 py-2 rounded transition-colors group ${isHuman
+            className={`w-full text-left px-3 py-2 rounded transition-colors group flex items-center gap-2 ${isHuman
                 ? 'bg-yellow-300 text-black hover:bg-yellow-400 font-black border border-black shadow-[2px_2px_0px_rgba(0,0,0,1)]'
                 : 'hover:bg-black hover:text-white'
                 }`}
         >
-            <span className={`font-comic text-sm block truncate ${isHuman ? 'uppercase tracking-wider' : 'font-bold'}`}>
+            {isHuman && (
+                <div className="w-5 h-5 shrink-0 flex items-center justify-center text-base">
+                    👥
+                </div>
+            )}
+            {!isHuman && vote.llm.provider?.logoUrl && (
+                <div className="w-5 h-5 shrink-0 flex items-center justify-center">
+                    <img src={vote.llm.provider.logoUrl} alt="" className="w-full h-full object-contain" />
+                </div>
+            )}
+            <span className={`font-comic text-sm block truncate flex-1 ${isHuman ? 'uppercase tracking-wider' : 'font-bold'}`}>
                 {vote.llm.name}
             </span>
         </button>

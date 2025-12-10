@@ -33,6 +33,9 @@ model LLM {
   totalProblems     Int @default(0)
   completedProblems Int @default(0)
 
+  provider   Provider? @relation(fields: [providerId], references: [id])
+  providerId String?
+
   votes     Vote[]
 }
 
@@ -47,7 +50,7 @@ model Vote {
   id        String   @id @default(uuid())
   llm       LLM      @relation(fields: [llmId], references: [id], onDelete: Cascade)
   llmId     String
-  problem   Problem  @relation(fields: [problemId], references: [id])
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   problemId String
   
   choice    String
@@ -56,4 +59,15 @@ model Vote {
   assumptions String?
   requestPayload String? @db.Text
   createdAt DateTime @default(now())
+  audioUrl  String?
+
+  @@unique([llmId, problemId])
+}
+
+model Provider {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  logoUrl   String
+  voiceId   String?
+  llms      LLM[]
 }

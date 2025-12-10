@@ -1,16 +1,25 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdminControls() {
+type Provider = {
+    id: string;
+    name: string;
+    logoUrl: string;
+};
+
+export default function AdminControls({ providers }: { providers: Provider[] }) {
     const router = useRouter();
     const [modelId, setModelId] = useState('');
     const [name, setName] = useState('');
+    const [providerId, setProviderId] = useState('');
     const [reasoningEffort, setReasoningEffort] = useState('default');
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+
+    // Dropdown state
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,13 +29,19 @@ export default function AdminControls() {
             const res = await fetch('/api/admin/llm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ modelId, name, reasoningEffort: reasoningEffort === 'default' ? undefined : reasoningEffort }),
+                body: JSON.stringify({
+                    modelId,
+                    name,
+                    providerId: providerId || undefined,
+                    reasoningEffort: reasoningEffort === 'default' ? undefined : reasoningEffort
+                }),
             });
 
             if (res.ok) {
                 setStatus({ type: 'success', message: 'Run started successfully!' });
                 setModelId('');
                 setName('');
+                setProviderId('');
                 setReasoningEffort('default');
                 router.refresh();
                 setTimeout(() => setStatus({ type: null, message: '' }), 3000);
@@ -41,10 +56,72 @@ export default function AdminControls() {
         }
     };
 
+    const selectedProvider = providers.find(p => p.id === providerId);
+
     return (
         <div className="glass-panel p-8 rounded-3xl space-y-6">
             <h2 className="text-2xl font-bold">Add New LLM</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block text-sm text-zinc-400 mb-1">Company / Provider (Optional)</label>
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 flex items-center justify-between hover:border-zinc-500 transition-colors"
+                        >
+                            {selectedProvider ? (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 flex items-center justify-center">
+                                        <img src={selectedProvider.logoUrl} alt={selectedProvider.name} className="w-full h-full object-contain" />
+                                    </div>
+                                    <span className="font-medium">{selectedProvider.name}</span>
+                                </div>
+                            ) : (
+                                <span className="text-zinc-500">Select a company...</span>
+                            )}
+                            <span className="text-zinc-500 text-xs">▼</span>
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isDropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-xl z-20 max-h-60 overflow-y-auto">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setProviderId('');
+                                        setIsDropdownOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-3 hover:bg-zinc-800 text-zinc-400 text-sm border-b border-zinc-800 flex items-center gap-3"
+                                >
+                                    <span className="font-bold">None / Unknown</span>
+                                </button>
+                                {providers.map(p => (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        onClick={() => {
+                                            setProviderId(p.id);
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 transition-colors"
+                                    >
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                            <img src={p.logoUrl} alt={p.name} className="w-full h-full object-contain" />
+                                        </div>
+                                        <span className="font-bold">{p.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Overlay to close on click outside */}
+                        {isDropdownOpen && (
+                            <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}></div>
+                        )}
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-sm text-zinc-400 mb-1">Model Name</label>
                     <input

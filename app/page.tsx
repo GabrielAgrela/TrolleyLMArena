@@ -11,7 +11,11 @@ async function getProblem(id?: string) {
             include: {
                 votes: {
                     include: {
-                        llm: true
+                        llm: {
+                            include: {
+                                provider: true
+                            }
+                        }
                     }
                 }
             }
@@ -29,7 +33,11 @@ async function getProblem(id?: string) {
         include: {
             votes: {
                 include: {
-                    llm: true
+                    llm: {
+                        include: {
+                            provider: true
+                        }
+                    }
                 }
             }
         }
