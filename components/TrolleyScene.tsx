@@ -10,7 +10,7 @@ type Vote = {
         provider?: {
             name: string;
             logoUrl: string;
-        }
+        } | null;
     };
     choice: string;
     reasoning: string | null;
@@ -177,16 +177,11 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     let tailOffset = 0;
 
     if (hoverState && windowHeight > 0) {
-        // We limit the bubble to 60vh max height
-        // But for positioning, we should use the *actual* height if we have it,
-        // otherwise default to the max to be safe during first render.
+        // Desktop positioning logic (Mobile handles via CSS centering)
         const headerOffset = 40;
         const padding = 20;
 
         // Calculate the effective half-height of the bubble
-        // If bubbleHeight is 0 (first render), we use a rough estimate or 0 to avoid jumping to center
-        // actually using maxBubbleHeight/2 as fallback is 'safe' but causes the 'too far' issue
-        // so let's try to be optimistic if 0, or use a reasonable min default (e.g. 100px)
         const currentHalfHeight = bubbleHeight > 0 ? (bubbleHeight / 2) : 100;
 
         // Boundaries for the CENTER of the bubble
@@ -195,6 +190,11 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
         // Clamp the bubble's center position
         bubbleTop = Math.max(Math.min(hoverState.y, maxCenter), minCenter);
+
+        // Mobile Override: Keep bubble in the visualizer stage (top)
+        if (window.innerWidth < 768) {
+            bubbleTop = windowHeight * 0.28;
+        }
 
         // The tail needs to point to hoverState.y (the real target)
         const rawOffset = hoverState.y - bubbleTop;
@@ -205,12 +205,12 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     }
 
     return (
-        <div className="flex h-screen w-full bg-white text-black font-sans overflow-hidden">
+        <div className="flex flex-col md:flex-row h-screen w-full bg-white text-black font-sans overflow-hidden">
             {/* Left Sidebar - LLM List */}
-            <div className="w-64 flex-shrink-0 border-r-2 border-black flex flex-col bg-zinc-50 h-full">
+            <div className="w-full md:w-64 flex-shrink-0 border-r-0 md:border-r-2 border-t-2 md:border-t-0 border-black flex flex-col bg-zinc-50 h-[45vh] md:h-full order-2 md:order-first">
                 <div className="p-4 border-b-2 border-black bg-white z-10">
                     <h2 className="font-bold text-xl font-comic">The Deciders</h2>
-                    <div className="text-xs text-zinc-500 mt-1">Hover to see their logic</div>
+                    <div className="text-xs text-zinc-500 mt-1">Hover or tap to see their logic</div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -330,11 +330,11 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             />
 
             {/* Main Stage - The Sketch */}
-            <div className="flex-1 relative flex flex-col">
+            <div className="flex-1 relative flex flex-col h-[55vh] md:h-full order-1 md:order-none">
                 {/* Mute Toggle */}
                 <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="absolute top-4 right-4 z-50 p-3 bg-white border-2 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all"
+                    className="absolute bottom-4 right-4 md:bottom-auto md:top-4 md:right-4 z-50 p-3 bg-white border-2 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all"
                     title={isMuted ? "Unmute Audio" : "Mute Audio"}
                 >
                     <span className="text-xl filter grayscale-0">
@@ -342,17 +342,17 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                     </span>
                 </button>
                 {/* Problem Text Header */}
-                <div className="absolute top-0 left-0 right-0 p-8 text-center pointer-events-none z-10">
-                    <h1 className="text-3xl md:text-4xl font-black font-comic mb-4">{problem.title}</h1>
-                    <p className="text-xl md:text-2xl font-comic max-w-4xl mx-auto leading-relaxed">
+                <div className="absolute top-0 left-0 right-0 p-4 md:p-8 text-center pointer-events-none z-10">
+                    <h1 className="text-xl md:text-4xl font-black font-comic mb-2 md:mb-4 leading-tight">{problem.title}</h1>
+                    <p className="text-sm md:text-2xl font-comic max-w-4xl mx-auto leading-relaxed line-clamp-3 md:line-clamp-none">
                         {problem.text}
                     </p>
 
                     {/* Human Consensus Sticker */}
-                    <div className="inline-block mt-4 bg-[#ffeb3b] text-black border-2 border-black px-4 py-2 transform -rotate-2 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-                        <span className="font-bold font-comic uppercase tracking-widest text-sm block text-zinc-600 mb-1">Human Consensus</span>
-                        <span className="font-black font-comic text-xl">
-                            {problem.humanPullVotes > problem.humanNothingVotes ? 'PULL THE LEVER' : 'DO NOTHING'}
+                    <div className="inline-block mt-2 md:mt-4 bg-[#ffeb3b] text-black border-2 border-black px-2 md:px-4 py-1 md:py-2 transform -rotate-2 shadow-[2px_2px_0px_rgba(0,0,0,1)] md:shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                        <span className="font-bold font-comic uppercase tracking-widest text-[10px] md:text-sm block text-zinc-600 mb-0 md:mb-1">Human Consensus</span>
+                        <span className="font-black font-comic text-sm md:text-xl">
+                            {problem.humanPullVotes > problem.humanNothingVotes ? 'PULL' : 'NOTHING'}
                             {' '}
                             ({Math.round((Math.max(problem.humanPullVotes, problem.humanNothingVotes) / (problem.humanPullVotes + problem.humanNothingVotes || 1)) * 100)}%)
                         </span>
@@ -371,15 +371,15 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                                 animate={{ opacity: 1, x: 0, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 style={{ top: bubbleTop }}
-                                className="absolute left-6 -translate-y-1/2 w-full max-w-xl pointer-events-none z-50"
+                                className="absolute left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 -translate-y-1/2 w-[95%] md:w-full md:max-w-xl pointer-events-none z-50"
                             >
-                                <div ref={bubbleRef} className="bg-white border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_rgba(0,0,0,1)] relative ml-4 flex flex-col pointer-events-auto">
+                                <div ref={bubbleRef} className="bg-white border-4 border-black rounded-[2rem] shadow-[4px_4px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_rgba(0,0,0,1)] relative ml-0 md:ml-4 flex flex-col pointer-events-auto" onClick={(e) => e.stopPropagation()}>
                                     {/* Speech Bubble Tail - Pointing Left (Attached to outer shell) */}
-                                    <div style={{ transform: `translateY(${tailOffset}px)` }} className="absolute top-1/2 -left-6 -translate-y-1/2 w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[24px] border-r-black transition-transform duration-100 z-10"></div>
-                                    <div style={{ transform: `translateY(${tailOffset}px)` }} className="absolute top-1/2 -left-[18px] -translate-y-1/2 w-0 h-0 border-t-[16px] border-t-transparent border-b-[16px] border-b-transparent border-r-[20px] border-r-white transition-transform duration-100 z-20"></div>
+                                    <div style={{ transform: `translateY(${tailOffset}px)` }} className="hidden md:block absolute top-1/2 -left-6 -translate-y-1/2 w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[24px] border-r-black transition-transform duration-100 z-10"></div>
+                                    <div style={{ transform: `translateY(${tailOffset}px)` }} className="hidden md:block absolute top-1/2 -left-[18px] -translate-y-1/2 w-0 h-0 border-t-[16px] border-t-transparent border-b-[16px] border-b-transparent border-r-[20px] border-r-white transition-transform duration-100 z-20"></div>
 
-                                    {/* Content Area - No Scroll, Full Height */}
-                                    <div className="p-6 rounded-[2rem] w-full">
+                                    {/* Content Area */}
+                                    <div className="p-4 md:p-6 rounded-[2rem] w-full max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
                                         <div className="flex items-start gap-4">
                                             {hoverState.vote.id === 'humanity' ? (
                                                 <div className="shrink-0 w-12 h-12 flex items-center justify-center text-4xl -mt-2">
@@ -480,7 +480,7 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
     const isNothing = hoveredChoice && !isPull;
 
     return (
-        <svg viewBox="0 0 800 500" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+        <svg viewBox="0 0 800 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <filter id="wobbly">
                     <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
