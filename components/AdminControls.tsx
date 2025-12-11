@@ -15,6 +15,7 @@ export default function AdminControls({ providers }: { providers: Provider[] }) 
     const [name, setName] = useState('');
     const [providerId, setProviderId] = useState('');
     const [reasoningEffort, setReasoningEffort] = useState('default');
+    const [createTts, setCreateTts] = useState(false);
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
 
@@ -33,7 +34,8 @@ export default function AdminControls({ providers }: { providers: Provider[] }) 
                     modelId,
                     name,
                     providerId: providerId || undefined,
-                    reasoningEffort: reasoningEffort === 'default' ? undefined : reasoningEffort
+                    reasoningEffort: reasoningEffort === 'default' ? undefined : reasoningEffort,
+                    createTts
                 }),
             });
 
@@ -43,6 +45,7 @@ export default function AdminControls({ providers }: { providers: Provider[] }) 
                 setName('');
                 setProviderId('');
                 setReasoningEffort('default');
+                setCreateTts(false);
                 router.refresh();
                 setTimeout(() => setStatus({ type: null, message: '' }), 3000);
             } else {
@@ -156,6 +159,18 @@ export default function AdminControls({ providers }: { providers: Provider[] }) 
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                     </select>
+                </div>
+                <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-700 rounded-lg p-3">
+                    <input
+                        type="checkbox"
+                        id="createTts"
+                        checked={createTts}
+                        onChange={(e) => setCreateTts(e.target.checked)}
+                        className="w-5 h-5 accent-purple-600 rounded focus:ring-purple-500 focus:ring-offset-0 bg-zinc-800 border-zinc-600"
+                    />
+                    <label htmlFor="createTts" className="text-sm text-zinc-300 font-medium cursor-pointer select-none">
+                        Generate TTS Audio (requires Provider Voice ID)
+                    </label>
                 </div>
                 <button
                     type="submit"

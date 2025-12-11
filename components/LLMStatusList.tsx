@@ -20,6 +20,8 @@ type LLM = {
     totalProblems: number;
     completedProblems: number;
     providerId?: string | null;
+    missingTtsCount?: number;
+    hasVoice?: boolean;
 };
 
 export default function LLMStatusList({ initialLLMs, providers }: { initialLLMs: any[], providers: Provider[] }) {
@@ -148,35 +150,64 @@ export default function LLMStatusList({ initialLLMs, providers }: { initialLLMs:
                                 </div>
                             </div>
 
-                            <div className="text-right flex flex-col items-end gap-2">
-                                <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-4">
+                                {(llm.missingTtsCount || 0) > 0 && llm.hasVoice && (
                                     <button
-                                        onClick={() => openEditModal(llm)}
-                                        className="p-1 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/10"
-                                        title="Edit"
+                                        onClick={async () => {
+                                            if (!confirm(`Generate TTS for ${llm.missingTtsCount} missing votes? This may take a while and incur costs.`)) return;
+                                            try {
+                                                const res = await fetch(`/api/admin/llm/${llm.id}/tts`, { method: 'POST' });
+                                                if (res.ok) {
+                                                    const data = await res.json();
+                                                    alert(`Finished! Generated ${data.converted} audio files.`);
+                                                    router.refresh();
+                                                } else {
+                                                    const err = await res.json();
+                                                    alert(`Error: ${err.error || 'Unknown error'}`);
+                                                }
+                                            } catch (e) {
+                                                console.error(e);
+                                                alert('Failed to trigger TTS generation');
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-xs font-medium rounded-lg border border-purple-500/30 transition-colors flex items-center gap-2"
+                                        title="Generate missing TTS audio"
                                     >
-                                        ✏️
+                                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                                        Gen TTS ({llm.missingTtsCount})
                                     </button>
-                                    <DeleteLLMButton id={llm.id} name={llm.name} />
-                                </div>
-
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold transition-colors duration-300 ${llm.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                                    llm.status === 'RUNNING' ? 'bg-blue-500/20 text-blue-400 animate-pulse' :
-                                        llm.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
-                                            'bg-zinc-500/20 text-zinc-400'
-                                    }`}>
-                                    {llm.status}
-                                    {llm.status === 'RUNNING' && llm.totalProblems > 0 && (
-                                        <span className="ml-1 opacity-75">
-                                            ({llm.completedProblems}/{llm.totalProblems})
-                                        </span>
-                                    )}
-                                </span>
-                                {llm.alignmentScore !== null && (
-                                    <div className="text-sm font-bold animate-in fade-in">
-                                        {llm.alignmentScore.toFixed(1)}%
-                                    </div>
                                 )}
+
+                                <div className="text-right flex flex-col items-end gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => openEditModal(llm)}
+                                            className="p-1 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/10"
+                                            title="Edit"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <DeleteLLMButton id={llm.id} name={llm.name} />
+                                    </div>
+
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold transition-colors duration-300 ${llm.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                        llm.status === 'RUNNING' ? 'bg-blue-500/20 text-blue-400 animate-pulse' :
+                                            llm.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
+                                                'bg-zinc-500/20 text-zinc-400'
+                                        }`}>
+                                        {llm.status}
+                                        {llm.status === 'RUNNING' && llm.totalProblems > 0 && (
+                                            <span className="ml-1 opacity-75">
+                                                ({llm.completedProblems}/{llm.totalProblems})
+                                            </span>
+                                        )}
+                                    </span>
+                                    {llm.alignmentScore !== null && (
+                                        <div className="text-sm font-bold animate-in fade-in">
+                                            {llm.alignmentScore.toFixed(1)}%
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );

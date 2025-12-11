@@ -147,18 +147,28 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                 saveCurrentProgress();
                 audioRef.current.pause();
             }
+            // Reset UI state
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            setIsProgressSaved(false);
         }
     };
 
     // Audio Logic
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const audioProgress = useRef<Record<string, number>>({});
+    const playbackStartOffsetRef = useRef<number>(0);
     const currentUrlRef = useRef<string | null>(null);
     const [isMuted, setIsMuted] = useState(false);
+    const [isProgressSaved, setIsProgressSaved] = useState(false); // UI State for save status
+    const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const saveCurrentProgress = () => {
         if (audioRef.current && currentUrlRef.current) {
-            audioProgress.current[currentUrlRef.current] = audioRef.current.currentTime;
+            // Only save if we've listened for more than 5 seconds
+            const sessionDuration = audioRef.current.currentTime - playbackStartOffsetRef.current;
+            if (sessionDuration > 5) {
+                audioProgress.current[currentUrlRef.current] = audioRef.current.currentTime;
+            }
         }
     };
 
@@ -168,6 +178,8 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             if (audioRef.current) {
                 saveCurrentProgress();
                 audioRef.current.pause();
+                if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+                setIsProgressSaved(false);
             }
         } else {
             // Resume if we are currently hovering something with audio
@@ -186,11 +198,27 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             audioRef.current.pause();
         }
 
+        // Reset UI state
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        setIsProgressSaved(false);
+
         const audio = new Audio(url);
 
         // Restore progress if exists
         const savedTime = audioProgress.current[url] || 0;
         audio.currentTime = savedTime;
+        playbackStartOffsetRef.current = savedTime;
+
+        // Check if we are resuming from a "safe" point
+        const isAlreadySaved = savedTime > 5;
+        setIsProgressSaved(isAlreadySaved);
+
+        // Only start the loading timer if it's NOT already saved
+        if (!isAlreadySaved) {
+            saveTimerRef.current = setTimeout(() => {
+                setIsProgressSaved(true);
+            }, 5000);
+        }
 
         audioRef.current = audio;
         currentUrlRef.current = url;
@@ -200,6 +228,8 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             if (audioProgress.current[url]) {
                 delete audioProgress.current[url];
             }
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            setIsProgressSaved(false);
         });
 
         audio.play()
@@ -478,12 +508,30 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                                                 </div>
                                             )}
 
-                                            <div>
-                                                <div className="text-sm font-bold text-zinc-500 uppercase tracking-wide mb-1">
-                                                    {hoverState.vote.id === 'humanity' ? (
-                                                        <span>HUMANITY SAYS {hoverState.vote.choice === 'pull' ? 'PULL' : 'DO NOTHING'}:</span>
-                                                    ) : (
-                                                        <span>{hoverState.vote.llm.name} says:</span>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="text-sm font-bold text-zinc-500 uppercase tracking-wide">
+                                                        {hoverState.vote.id === 'humanity' ? (
+                                                            <span>HUMANITY SAYS {hoverState.vote.choice === 'pull' ? 'PULL' : 'DO NOTHING'}:</span>
+                                                        ) : (
+                                                            <span>{hoverState.vote.llm.name} says:</span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Save Status Indicator */}
+                                                    {hoverState.vote.audioUrl && (
+                                                        <div className="flex items-center gap-2" title={isProgressSaved ? "Progress Locked & Saved" : "Saving Progress..."}>
+                                                            {isProgressSaved ? (
+                                                                <svg className="w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg className="animate-spin w-4 h-4 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                                 <p className="text-sm md:text-base font-comic leading-tight">

@@ -9,8 +9,32 @@ export async function GET() {
     try {
         const llms = await prisma.lLM.findMany({
             orderBy: { createdAt: 'desc' },
+            include: {
+                _count: {
+                    select: {
+                        votes: {
+                            where: { audioUrl: null }
+                        }
+                    }
+                },
+                provider: {
+                    select: {
+                        voiceId: true
+                    }
+                }
+            }
         });
-        return NextResponse.json(llms);
+
+        // Transform to include missingTtsCount for cleaner frontend consumption if needed, 
+        // or just return as is and let frontend handle `_count.votes`.
+        // Let's return a flattened structure or just extend the type on frontend.
+        const augmentedLLMs = llms.map(llm => ({
+            ...llm,
+            missingTtsCount: llm._count.votes,
+            hasVoice: !!llm.provider?.voiceId
+        }));
+
+        return NextResponse.json(augmentedLLMs);
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
@@ -19,14 +43,14 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { modelId, name, reasoningEffort, providerId } = body;
+        const { modelId, name, reasoningEffort, providerId, createTts } = body;
 
         if (!modelId || !name) {
             return NextResponse.json({ error: 'Missing modelId or name' }, { status: 400 });
         }
 
         // Trigger run in background
-        runLLM(modelId, name, reasoningEffort, providerId).catch(console.error);
+        runLLM(modelId, name, reasoningEffort, providerId, createTts).catch(console.error);
 
         return NextResponse.json({ success: true, message: 'Run started' });
     } catch (error) {
