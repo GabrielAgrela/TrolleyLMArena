@@ -18,12 +18,32 @@ type Vote = {
     audioUrl?: string | null;
 };
 
+type OptionStyle = {
+    left?: string;
+    width?: string;
+    maxWidth?: string;
+    transform?: string;
+    [key: string]: any;
+};
+
+type Option = {
+    kill?: number;
+    src?: string;
+    style?: OptionStyle;
+    sound?: string;
+    volume?: number;
+    hide?: boolean;
+    text?: string;
+};
+
 type Problem = {
     id: string; // Added ID
     title: string;
     text: string;
     humanPullVotes: number;
     humanNothingVotes: number;
+    option1?: Option;
+    option2?: Option;
 };
 
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -42,6 +62,30 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     React.useEffect(() => {
         setIsTransitioning(false);
     }, [problem]);
+
+    // FALLBACK IMAGE MAPPING
+    const getSafeSrc = (src?: string) => {
+        if (!src) return null;
+        const validImages = [
+            'five-guys', 'one-guy', 'four-guys', 'life-savings', 'mona-lisa',
+            'lobsters', 'cat', 'brick-wall', 'yourself', 'rich-guy',
+            'five-robots', 'one-baby', '50-2', '10-10', 'three-trolleys', 'one-trolley'
+        ];
+
+        if (validImages.includes(src)) return src;
+
+        // Map variations to base images
+        if (src.includes('five-guys')) return 'five-guys';
+        if (src.includes('one-guy')) return 'one-guy';
+        if (src.includes('friend')) return 'one-guy';
+        if (src.includes('cousin')) return 'one-guy';
+        if (src.includes('clones')) return 'five-guys';
+        if (src.includes('citizen')) return 'one-guy';
+        if (src.includes('enemy')) return 'one-guy';
+        // ... add other specific mappings as discovered
+
+        return null; // Or return a 'mystery-box' placeholder if valid
+    };
 
     const handleNextProblem = () => {
         // If we are viewing a specific problem, go back to random mode
@@ -362,6 +406,45 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                 {/* The SVG Scene */}
                 <div className="flex-1 w-full h-full relative">
                     <TrolleySVG hoveredChoice={hoverState?.vote.choice} />
+
+                    {/* Render Problem Options with Standardized Positioning */}
+                    {[problem.option1, problem.option2].map((opt, i) => {
+                        const safeSrc = getSafeSrc(opt?.src);
+                        if (!opt || opt.hide || !safeSrc) return null;
+
+                        // Standardized positions
+                        // Index 0 = Option 1 = Straight/Bottom Track
+                        // Index 1 = Option 2 = Divert/Top Track
+                        const isOption1 = i === 0;
+
+                        const baseStyle: React.CSSProperties = {
+                            position: 'absolute',
+                            left: '80%', // Moved further right
+                            transformOrigin: 'center center',
+                            mixBlendMode: 'multiply',
+                            filter: 'contrast(1.2) brightness(1.1)',
+                            maxWidth: opt.style?.maxWidth || '20%',
+                            width: opt.style?.width,
+                        };
+
+                        // Track-specific adjustments
+                        const trackStyle: React.CSSProperties = isOption1
+                            ? { top: '80%', transform: 'translateY(-50%) rotate(10deg)' } // Bottom Track: Lower down and slight angle
+                            : { top: '35%', transform: 'translateY(-50%) rotate(-5deg)' }; // Top Track: Higher up and flatter angle
+
+                        return (
+                            <img
+                                key={i}
+                                src={`/problem-images/${safeSrc}.png`}
+                                style={{
+                                    ...baseStyle,
+                                    ...trackStyle,
+                                }}
+                                className="pointer-events-none z-10 select-none"
+                                alt=""
+                            />
+                        );
+                    })}
 
                     {/* Reasoning Bubble Overlay */}
                     <AnimatePresence>

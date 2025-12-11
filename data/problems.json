@@ -35,7 +35,7 @@
             "src": "five-guys",
             "style": {
                 "left": "60%",
-                "transform": "translateY(-19%)",
+                "transform": "translateY(-50%)",
                 "maxWidth": "21%"
             },
             "sound": "people_death",
@@ -46,7 +46,7 @@
             "src": "four-guys",
             "style": {
                 "left": "72%",
-                "transform": "translateY(-130%) rotate(-10deg)",
+                "transform": "translateY(-50%) rotate(-10deg)",
                 "maxWidth": "18%"
             },
             "sound": "people_death",
@@ -192,7 +192,7 @@
     {
         "id": "sleeping",
         "title": "Sleeping",
-        "text":"Oh no! A trolley is heading towards 5 people who are sleeping and won't feel pain. You can pull the lever to divert it to the other track, running over someone who is wide awake instead. What do you do?",
+        "text": "Oh no! A trolley is heading towards 5 people who are sleeping and won't feel pain. You can pull the lever to divert it to the other track, running over someone who is wide awake instead. What do you do?",
         "option1": {
             "kill": 5,
             "src": "five-guys-sleeping",
@@ -323,8 +323,8 @@
     },
     {
         "id": "glasses",
-        "title":"Can't see",
-        "text":"Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, killing 1 person instead. At least, that's what you think is happening. You forgot your glasses and can't see that well. What do you do?",
+        "title": "Can't see",
+        "text": "Oh no! A trolley is heading towards 5 people. You can pull the lever to divert it to the other track, killing 1 person instead. At least, that's what you think is happening. You forgot your glasses and can't see that well. What do you do?",
         "trolleySound": "trolley_move_foggy",
         "option1": {
             "kill": 5,
@@ -536,7 +536,7 @@
     {
         "id": "reincarnation",
         "title": "Reincarnation",
-        "text":"Oh no! You're a reincarnated being who will eventually be reincarnated as every person in this classic trolley problem. What do you do?",
+        "text": "Oh no! You're a reincarnated being who will eventually be reincarnated as every person in this classic trolley problem. What do you do?",
         "option1": {
             "kill": 5,
             "src": "five-guys-you",
@@ -603,7 +603,7 @@
     {
         "id": "eternity",
         "title": "Eternity",
-        "text":"Oh no! Due to a construction error, a trolley is stuck in an eternal loop. If you pull the lever the trolley will explode, and if you don't the trolley and its passengers will go in circles for eternity. What do you do?",
+        "text": "Oh no! Due to a construction error, a trolley is stuck in an eternal loop. If you pull the lever the trolley will explode, and if you don't the trolley and its passengers will go in circles for eternity. What do you do?",
         "trolleyLoop": "trolley_move_circles_loop",
         "option1": {
             "src": "five-guys",
@@ -722,7 +722,7 @@
                 "transform": "translateY(-158%)",
                 "maxWidth": "10%"
             },
-            "text":"I don't have a choice",
+            "text": "I don't have a choice",
             "sound": "person_death",
             "volume": 0.5
         }

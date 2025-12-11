@@ -56,8 +56,66 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showComparison, setShowComparison] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+    const itemsPerPage = 10;
 
     const [payloadContent, setPayloadContent] = useState<string | null>(null);
+
+    // Filter llms based on search query
+    const filteredLLMs = llms.filter(llm => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+            llm.name.toLowerCase().includes(q) ||
+            llm.modelId.toLowerCase().includes(q) ||
+            (llm.provider?.name || '').toLowerCase().includes(q)
+        );
+    });
+
+    const totalPages = Math.ceil(filteredLLMs.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+    // We filter selectedLLMs from the FULL list for comparison modal
+    const selectedLLMs = llms.filter(llm => selectedIds.has(llm.id));
+
+    // But we render only the current page (of filtered results) in the table
+    const currentLLMs = filteredLLMs.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Reset to page 1 when search changes
+    // We can't use useEffect easily inside this tool call without importing it, 
+    // but we can just reset in the set function or check effectively.
+    // Actually, let's just use a wrapper for setSearchQuery.
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+        setExpandedId(null);
+        const tableElement = document.getElementById('leaderboard-table');
+        if (tableElement) {
+            tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    const getPageNumbers = () => {
+        const pages = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 4) {
+                pages.push(1, 2, 3, 4, 5, '...', totalPages);
+            } else if (currentPage >= totalPages - 3) {
+                pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+            }
+        }
+        return pages;
+    };
 
     const toggleExpand = (id: string) => {
         setExpandedId(expandedId === id ? null : id);
@@ -70,7 +128,6 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
             newSet.delete(id);
         } else {
             if (newSet.size >= 3) {
-                // limit text
                 alert("You can compare up to 3 models at a time.");
                 return;
             }
@@ -79,25 +136,48 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
         setSelectedIds(newSet);
     };
 
-    const selectedLLMs = llms.filter(llm => selectedIds.has(llm.id));
-
     return (
-        <div className="space-y-4">
-            {/* Action Bar */}
-            <div className={`flex justify-end transition-all duration-300 ${selectedIds.size >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                <button
-                    onClick={() => setShowComparison(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all uppercase tracking-widest font-comic"
-                >
-                    <span>Analyze Matchup ({selectedIds.size})</span>
-                    <span className="text-xl">⚔️</span>
-                </button>
+        <div className="space-y-6" id="leaderboard-table">
+            {/* Action Bar: Compare Button (Floating) */}
+            <div className={`flex justify-end h-0 pointer-events-none relative z-20`}>
+                <div className={`absolute bottom-4 right-0 transition-all duration-300 pointer-events-auto ${selectedIds.size >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <button
+                        onClick={() => setShowComparison(true)}
+                        className="flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all uppercase tracking-widest font-comic"
+                    >
+                        <span>Analyze Matchup ({selectedIds.size})</span>
+                        <span className="text-xl">⚔️</span>
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[12px_12px_0px_rgba(0,0,0,1)]">
+                {/* Table Header & Search */}
+                <div className="p-4 md:p-6 border-b-4 border-black bg-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-2xl">🏆</span>
+                        <h2 className="font-black text-xl md:text-3xl uppercase tracking-wider italic transform -skew-x-6">Current Standings</h2>
+                    </div>
+
+                    <div className="relative w-full md:w-96 group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-black transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search models..."
+                            value={searchQuery}
+                            onChange={handleSearch}
+                            className="w-full pl-10 pr-4 py-2 border-2 border-black rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-black transition-all bg-white shadow-[2px_2px_0px_rgba(0,0,0,0.1)] focus:shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                        />
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse font-comic">
-                        <thead className="bg-zinc-100 border-b-4 border-black text-black">
+                        <thead className="bg-zinc-50 border-b-4 border-black text-black">
                             <tr className="uppercase tracking-widest text-sm">
                                 <th className="p-2 md:p-6 font-black w-10 md:w-20 text-center border-r-2 border-black text-[10px] md:text-sm">Compare</th>
                                 <th className="p-2 md:p-6 font-black w-10 md:w-24 text-center border-r-2 border-black text-[10px] md:text-sm">Rank</th>
@@ -142,14 +222,15 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y-2 divide-dashed divide-zinc-300">
-                            {llms.length === 0 ? (
+                            {currentLLMs.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-12 text-center text-zinc-500 font-bold text-xl">
-                                        No models have been tested yet. Go run some!
+                                        {searchQuery ? `No models found matching "${searchQuery}"` : "No models have been tested yet. Go run some!"}
                                     </td>
                                 </tr>
                             ) : (
-                                llms.map((llm, index) => {
+                                currentLLMs.map((llm, relativeIndex) => {
+                                    const index = indexOfFirstItem + relativeIndex;
                                     const isExpanded = expandedId === llm.id;
                                     const isSelected = selectedIds.has(llm.id);
 
@@ -357,28 +438,70 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                         </tbody>
                     </table>
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-zinc-50 border-t-4 border-black gap-4">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 font-bold uppercase border-2 border-black rounded-lg hover:bg-black hover:text-white disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-black transition-colors"
+                        >
+                            ← Previous
+                        </button>
+
+                        <div className="flex gap-2 items-center flex-wrap justify-center">
+                            {getPageNumbers().map((page, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                                    disabled={page === '...'}
+                                    className={`w-10 h-10 flex items-center justify-center font-bold border-2 rounded-lg transition-all ${page === currentPage
+                                        ? 'bg-yellow-400 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] -translate-y-1'
+                                        : page === '...'
+                                            ? 'border-transparent cursor-default'
+                                            : 'bg-white border-gray-300 hover:border-black hover:bg-gray-100'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 font-bold uppercase border-2 border-black rounded-lg hover:bg-black hover:text-white disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-black transition-colors"
+                        >
+                            Next →
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {showComparison && (
-                <ComparisonModal llms={selectedLLMs} onClose={() => setShowComparison(false)} />
-            )}
+            {
+                showComparison && (
+                    <ComparisonModal llms={selectedLLMs} onClose={() => setShowComparison(false)} />
+                )
+            }
 
             {/* Request Payload Modal */}
-            {payloadContent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
-                        <div className="p-4 border-b-4 border-black bg-yellow-400 flex justify-between items-center">
-                            <h3 className="font-black text-xl uppercase tracking-wider font-comic">Transmitted Payload</h3>
-                            <button onClick={() => setPayloadContent(null)} className="p-2 hover:bg-black hover:text-white rounded-lg transition-colors border-2 border-black bg-white">
-                                ✕
-                            </button>
-                        </div>
-                        <div className="p-6 overflow-y-auto bg-zinc-50 font-mono text-xs">
-                            <pre className="whitespace-pre-wrap break-all">{payloadContent}</pre>
+            {
+                payloadContent && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
+                            <div className="p-4 border-b-4 border-black bg-yellow-400 flex justify-between items-center">
+                                <h3 className="font-black text-xl uppercase tracking-wider font-comic">Transmitted Payload</h3>
+                                <button onClick={() => setPayloadContent(null)} className="p-2 hover:bg-black hover:text-white rounded-lg transition-colors border-2 border-black bg-white">
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="p-6 overflow-y-auto bg-zinc-50 font-mono text-xs">
+                                <pre className="whitespace-pre-wrap break-all">{payloadContent}</pre>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

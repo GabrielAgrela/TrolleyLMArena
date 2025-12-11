@@ -66,6 +66,6 @@ export default async function BrowsePage(props: { searchParams: Promise<{ proble
     }
 
     return (
-        <TrolleyScene key={problem.id} problem={problem} votes={problem.votes} allProblems={allProblems} />
+        <TrolleyScene key={problem.id} problem={problem as any} votes={problem.votes} allProblems={allProblems} />
     );
 }
