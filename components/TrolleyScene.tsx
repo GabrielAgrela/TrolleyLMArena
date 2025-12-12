@@ -297,8 +297,13 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
             {/* Left Sidebar - LLM List */}
             <div className="w-full md:w-64 flex-shrink-0 border-r-0 md:border-r-2 border-t-2 md:border-t-0 border-black flex flex-col bg-zinc-50 h-[45vh] md:h-full order-2 md:order-first">
                 <div className="p-4 border-b-2 border-black bg-white z-10">
-                    <h2 className="font-bold text-xl font-comic">The Deciders</h2>
-                    <div className="text-xs text-zinc-500 mt-1">Hover or tap to see their logic</div>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+                        <div>
+                            <h2 className="font-bold text-xl font-comic leading-none">The Deciders</h2>
+                            <div className="text-xs text-zinc-500 mt-1">Hover or tap to see logic</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
