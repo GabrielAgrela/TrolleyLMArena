@@ -69,7 +69,9 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
         const validImages = [
             'five-guys', 'one-guy', 'four-guys', 'life-savings', 'mona-lisa',
             'lobsters', 'cat', 'brick-wall', 'yourself', 'rich-guy',
-            'five-robots', 'one-baby', '50-2', '10-10', 'three-trolleys', 'one-trolley'
+            'five-robots', 'one-baby', '50-2', '10-10', 'three-trolleys', 'one-trolley',
+            'five-elderly', 'portal',
+            'second-cousins', 'one-cousin'
         ];
 
         if (validImages.includes(src)) return src;
@@ -130,6 +132,18 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     } else {
         bystanders.unshift(humanVote);
     }
+
+    // Sort teams by Provider
+    const sortByProvider = (a: Vote, b: Vote) => {
+        if (a.id === 'humanity') return -1;
+        if (b.id === 'humanity') return 1;
+        const providerA = a.llm.provider?.name || 'zz';
+        const providerB = b.llm.provider?.name || 'zz';
+        return providerA.localeCompare(providerB) || a.llm.name.localeCompare(b.llm.name);
+    };
+
+    pullers.sort(sortByProvider);
+    bystanders.sort(sortByProvider);
 
     const handleHover = (vote: Vote | null, e?: React.MouseEvent) => {
         if (vote && e) {
@@ -289,9 +303,9 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
                     {/* Pullers Group */}
-                    <div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-green-600 mb-2 font-comic">
-                            Team Pull ({pullers.length})
+                    <div className="bg-green-50/50 rounded-xl p-3 border-2 border-green-200">
+                        <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-3 font-comic flex items-center gap-2 border-b border-green-200 pb-2">
+                            <span>✅</span> Team Pull ({pullers.length})
                         </div>
                         <div className="space-y-1">
                             {pullers.map(vote => (
@@ -301,9 +315,9 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                     </div>
 
                     {/* Bystanders Group */}
-                    <div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-red-600 mb-2 font-comic">
-                            Team Do Nothing ({bystanders.length})
+                    <div className="bg-red-50/50 rounded-xl p-3 border-2 border-red-200">
+                        <div className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 font-comic flex items-center gap-2 border-b border-red-200 pb-2">
+                            <span>🛑</span> Team Do Nothing ({bystanders.length})
                         </div>
                         <div className="space-y-1">
                             {bystanders.map(vote => (
@@ -451,8 +465,6 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                             position: 'absolute',
                             left: '80%', // Moved further right
                             transformOrigin: 'center center',
-                            mixBlendMode: 'multiply',
-                            filter: 'contrast(1.2) brightness(1.1)',
                             maxWidth: opt.style?.maxWidth || '20%',
                             width: opt.style?.width,
                         };
@@ -580,6 +592,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
 function VoteItem({ vote, onHover }: { vote: Vote, onHover: (v: Vote | null, e?: React.MouseEvent) => void }) {
     const isHuman = vote.id === 'humanity';
+
     return (
         <button
             onMouseEnter={(e) => onHover(vote, e)}
@@ -589,19 +602,25 @@ function VoteItem({ vote, onHover }: { vote: Vote, onHover: (v: Vote | null, e?:
                 : 'hover:bg-black hover:text-white'
                 }`}
         >
-            {isHuman && (
+            {isHuman ? (
                 <div className="w-5 h-5 shrink-0 flex items-center justify-center text-base">
                     👥
                 </div>
-            )}
-            {!isHuman && vote.llm.provider?.logoUrl && (
-                <div className="w-5 h-5 shrink-0 flex items-center justify-center">
+            ) : vote.llm.provider?.logoUrl ? (
+                <div className="w-6 h-6 shrink-0 p-0.5 bg-white rounded-full border border-zinc-200 overflow-hidden flex items-center justify-center">
                     <img src={vote.llm.provider.logoUrl} alt="" className="w-full h-full object-contain" />
                 </div>
+            ) : (
+                <div className="w-6 h-6 shrink-0 bg-zinc-900 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    {vote.llm.name[0]}
+                </div>
             )}
-            <span className={`font-comic text-sm block truncate flex-1 ${isHuman ? 'uppercase tracking-wider' : 'font-bold'}`}>
-                {vote.llm.name}
-            </span>
+
+            <div className="flex-1 min-w-0">
+                <span className={`font-comic text-sm block truncate ${isHuman ? 'uppercase tracking-wider' : 'font-bold text-zinc-900 group-hover:text-white'}`}>
+                    {vote.llm.name}
+                </span>
+            </div>
         </button>
     );
 }
