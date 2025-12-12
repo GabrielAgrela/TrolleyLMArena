@@ -493,6 +493,23 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                         );
                     })}
 
+                    {/* OVERLAY SVG FOR TEXT - Ensures text renders ON TOP of images (z-[100]) */}
+                    <div className="absolute inset-0 pointer-events-none z-[100]">
+                        <svg viewBox="0 0 800 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                            {hoverState?.vote.choice && (
+                                <text
+                                    x="600"
+                                    y={hoverState.vote.choice.toLowerCase() === 'pull' ? "180" : "400"}
+                                    textAnchor="middle"
+                                    className="font-comic font-bold uppercase"
+                                    style={{ fontSize: '42px', fill: 'white', stroke: 'black', strokeWidth: 3, paintOrder: 'stroke fill' }}
+                                >
+                                    {hoverState.vote.choice.toLowerCase() === 'pull' ? "PULL!" : "DO NOTHING!"}
+                                </text>
+                            )}
+                        </svg>
+                    </div>
+
                     {/* Reasoning Bubble Overlay */}
                     <AnimatePresence>
                         {hoverState && (
@@ -647,25 +664,59 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                 {/* GROUND LINE - REMOVED */}
 
                 {/* TRACKS */}
-                {/* Main Track Left */}
-                <path d="M -50 250 L 250 250" />
-                <path d="M -50 300 L 250 300" />
-                {/* Ties */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <path key={i} d={`M ${i * 40 - 40} 240 L ${i * 40 - 40} 310`} strokeWidth="2" />
+                {/* Main Track Ties (Static Left part) - Dense spacing */}
+                {Array.from({ length: 12 }).map((_, i) => (
+                    <path key={`tie-main-${i}`} d={`M ${i * 25 - 50} 240 L ${i * 25 - 50} 310`} strokeWidth="2" />
                 ))}
 
+                {/* Pull Track Ties - Curved portion */}
+                <TrackTies
+                    startT={0.05}
+                    endT={0.95}
+                    count={18}
+                    rail1={{ type: 'quad', p0: { x: 250, y: 250 }, p1: { x: 400, y: 250 }, p2: { x: 600, y: 150 } }}
+                    rail2={{ type: 'quad', p0: { x: 250, y: 300 }, p1: { x: 400, y: 300 }, p2: { x: 580, y: 190 } }}
+                />
+                {/* Pull Track Ties - Straight extension */}
+                <TrackTies
+                    startT={0.1}
+                    endT={1}
+                    count={8}
+                    rail1={{ type: 'line', p0: { x: 600, y: 150 }, p1: { x: 850, y: 150 } }}
+                    rail2={{ type: 'line', p0: { x: 580, y: 190 }, p1: { x: 850, y: 190 } }}
+                />
+
+                {/* Do Nothing Track Ties - Diverging curve (simplified to match bottom rail's quad) */}
+                <TrackTies
+                    startT={0.05}
+                    endT={0.95}
+                    count={15}
+                    rail1={{ type: 'quad', p0: { x: 250, y: 250 }, p1: { x: 450, y: 250 }, p2: { x: 550, y: 350 } }}
+                    rail2={{ type: 'quad', p0: { x: 250, y: 300 }, p1: { x: 400, y: 300 }, p2: { x: 500, y: 400 } }}
+                />
+                {/* Do Nothing Track Ties - Straight extension */}
+                <TrackTies
+                    startT={0.1}
+                    endT={1}
+                    count={10}
+                    rail1={{ type: 'line', p0: { x: 550, y: 350 }, p1: { x: 850, y: 400 } }}
+                    rail2={{ type: 'line', p0: { x: 500, y: 400 }, p1: { x: 850, y: 450 } }}
+                />
+
+
+                {/* Main Track Left (Rails) */}
+                <path d="M -50 250 L 250 250" />
+                <path d="M -50 300 L 250 300" />
+
+
                 {/* SWITCH POINT */}
-                {/* Top Path (Divert/Pull) -> Kills 1/Few */}
-                <path d="M 250 250 Q 400 250 600 150 L 850 150" stroke={isPull ? "#22c55e" : "black"} strokeWidth={isPull ? 6 : 3} className="transition-all duration-300" />
-                <path d="M 250 300 Q 400 300 580 190 L 850 190" stroke={isPull ? "#22c55e" : "black"} strokeWidth={isPull ? 6 : 3} className="transition-all duration-300" />
+                {/* Top Path (Divert/Pull) -> Kills 1/Few - Single smooth curve */}
+                <path d="M 250 250 C 400 250, 500 150, 850 150" stroke={isPull ? "#22c55e" : "black"} strokeWidth={isPull ? 6 : 3} className="transition-all duration-300" />
+                <path d="M 250 300 C 400 300, 480 190, 850 190" stroke={isPull ? "#22c55e" : "black"} strokeWidth={isPull ? 6 : 3} className="transition-all duration-300" />
 
-                {/* Bottom Path (Straight/Nothing) -> Kills 5/Many */}
-                {/* Top Rail: 250 -> 400 (Top of destination) */}
-                <path d="M 250 250 L 350 250 Q 450 250 550 350 L 850 400" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
-
-                {/* Bottom Rail: 300 -> 450 (Bottom of destination) */}
-                <path d="M 250 300 Q 400 300 500 400 L 850 450" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
+                {/* Bottom Path (Straight/Nothing) -> Kills 5/Many - Single smooth curve */}
+                <path d="M 250 250 C 350 250, 450 350, 850 400" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
+                <path d="M 250 300 C 350 300, 400 400, 850 450" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
 
                 {/* TROLLEY */}
                 <g transform="translate(50, 200)" className="animate-rumble">
@@ -712,18 +763,6 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                 {/* VICTIMS REMOVED - Dynamic content makes hardcoded stick figures inaccurate */}
             </g>
 
-            {/* Overlay Text for Hovered Choice */}
-            {hoveredChoice && (
-                <text
-                    x="600"
-                    y={isPull ? "180" : "400"}
-                    textAnchor="middle"
-                    className="font-comic font-bold text-2xl uppercase fill-white stroke-black stroke-2"
-                >
-                    {isPull ? "PULL!" : "DO NOTHING!"}
-                </text>
-            )}
-
             <style>
                 {`
                     .animate-rumble {
@@ -740,4 +779,80 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
             </style>
         </svg>
     );
+}
+
+// --- Track Tie Helpers ---
+
+type Point = { x: number, y: number };
+type RailDef =
+    | { type: 'line', p0: Point, p1: Point }
+    | { type: 'quad', p0: Point, p1: Point, p2: Point }
+    | { type: 'mix-line-quad', p0: Point, p1: Point, p2: Point, p3: Point };
+
+function getPointOnRail(rail: RailDef, t: number): Point {
+    if (rail.type === 'line') {
+        return {
+            x: rail.p0.x + t * (rail.p1.x - rail.p0.x),
+            y: rail.p0.y + t * (rail.p1.y - rail.p0.y)
+        };
+    } else if (rail.type === 'quad') {
+        const oneMinusT = 1 - t;
+        return {
+            x: oneMinusT * oneMinusT * rail.p0.x + 2 * oneMinusT * t * rail.p1.x + t * t * rail.p2.x,
+            y: oneMinusT * oneMinusT * rail.p0.y + 2 * oneMinusT * t * rail.p1.y + t * t * rail.p2.y
+        };
+    } else if (rail.type === 'mix-line-quad') {
+        // Specifically for the odd straight-then-curve rail
+        // p0->p1 is LINE, then p1->p3 with p2 control is QUAD
+        // Let's approximate the split. 
+        // L(250,250)->(350,250) dist=100
+        // Q(350,250)->C(450,250)->(550,350). Approx length ~220?
+        // Let's simplified logic: map t 0-0.3 to Line, 0.3-1 to Quad
+        if (t < 0.3) {
+            const localT = t / 0.3;
+            return {
+                x: rail.p0.x + localT * (rail.p1.x - rail.p0.x),
+                y: rail.p0.y + localT * (rail.p1.y - rail.p0.y)
+            };
+        } else {
+            const localT = (t - 0.3) / 0.7;
+            const oneMinusT = 1 - localT;
+            return {
+                x: oneMinusT * oneMinusT * rail.p1.x + 2 * oneMinusT * localT * rail.p2.x + localT * localT * rail.p3.x,
+                y: oneMinusT * oneMinusT * rail.p1.y + 2 * oneMinusT * localT * rail.p2.y + localT * localT * rail.p3.y
+            };
+        }
+    }
+    return { x: 0, y: 0 };
+}
+
+function TrackTies({ rail1, rail2, count, startT = 0, endT = 1 }: { rail1: RailDef, rail2: RailDef, count: number, startT?: number, endT?: number }) {
+    return (
+        <g>
+            {Array.from({ length: count }).map((_, i) => {
+                const step = (endT - startT) / count;
+                const t = startT + (i * step) + (step / 2); // Sample middle of segment? Or linear.
+                // Let's just linear
+                const tActual = startT + (i / (count - 1 || 1)) * (endT - startT);
+
+                const p1 = getPointOnRail(rail1, tActual);
+                const p2 = getPointOnRail(rail2, tActual);
+
+                // Extend slightly past rails
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const angle = Math.atan2(dy, dx);
+                const ext = 4; // Extension length
+
+                const x1 = p1.x - Math.cos(angle) * ext;
+                const y1 = p1.y - Math.sin(angle) * ext;
+                const x2 = p2.x + Math.cos(angle) * ext;
+                const y2 = p2.y + Math.sin(angle) * ext;
+
+                return (
+                    <path key={i} d={`M ${x1} ${y1} L ${x2} ${y2}`} strokeWidth="2" stroke="black" />
+                );
+            })}
+        </g>
+    )
 }

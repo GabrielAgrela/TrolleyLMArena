@@ -1,8 +1,11 @@
+# Development docker-compose with hot reloading
+# Usage: docker-compose -f docker-compose.dev.yml up
+
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
@@ -10,15 +13,13 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=http://localhost:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
     depends_on:
       db:
         condition: service_healthy
-
-    # Command for dev mode so we can edit files? Or prod as requested?
-    # User asked for "production ready". But "it should be done in docker". 
-    # I will provide a prod Dockerfile but run npm start.
-
-    restart: always
 
   db:
     image: postgres:15-alpine

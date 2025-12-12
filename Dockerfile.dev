@@ -1,0 +1,20 @@
+# Development Dockerfile with hot reloading
+FROM node:20-alpine
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Generate Prisma Client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# Run dev server with hot reloading
+CMD ["npm", "run", "dev"]
