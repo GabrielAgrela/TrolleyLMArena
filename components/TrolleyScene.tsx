@@ -90,14 +90,12 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
     };
 
     const handleNextProblem = () => {
-        // If we are viewing a specific problem, go back to random mode
-        if (searchParams.get('problemId')) {
-            handleNavigate('/');
-        } else {
-            // Otherwise just reroll
-            setTransitionDst(null);
-            setIsTransitioning(true);
-        }
+        // Find current problem index in the ordered list
+        const currentIndex = allProblems.findIndex(p => p.id === problem.id);
+        // Navigate to the next problem in sequence (wrap around)
+        const nextIndex = (currentIndex + 1) % allProblems.length;
+        const nextProblemId = allProblems[nextIndex].id;
+        handleNavigate(`/browse?problemId=${nextProblemId}`);
     };
 
     const handleNavigate = (path: string) => {
@@ -335,7 +333,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                 {/* Footer / Home Link */}
                 <div className="p-4 border-t-2 border-black bg-white space-y-3">
                     <button
-                        onClick={() => handleNavigate('/leaderboard')}
+                        onClick={() => handleNavigate('/')}
                         disabled={isTransitioning}
                         className="w-full py-3 bg-yellow-400 text-black font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all font-comic uppercase tracking-widest text-sm relative group overflow-hidden flex items-center justify-center disabled:cursor-not-allowed"
                     >
@@ -395,7 +393,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                                         key={p.id}
                                         onClick={() => {
                                             setIsSelectorOpen(false);
-                                            handleNavigate(`/?problemId=${p.id}`);
+                                            handleNavigate(`/browse?problemId=${p.id}`);
                                         }}
                                         className={`w-full text-left p-4 rounded-xl border-2 border-black font-comic hover:bg-yellow-300 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all ${p.id === problem.id ? 'bg-yellow-100' : 'bg-white'}`}
                                     >
@@ -468,7 +466,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
                         const baseStyle: React.CSSProperties = {
                             position: 'absolute',
-                            left: '80%', // Moved further right
+                            left: '70%', // Moved further right
                             transformOrigin: 'center center',
                             maxWidth: opt.style?.maxWidth || '20%',
                             width: opt.style?.width,
@@ -476,19 +474,23 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
 
                         // Track-specific adjustments
                         const trackStyle: React.CSSProperties = isOption1
-                            ? { top: '80%', transform: 'translateY(-50%) rotate(10deg)' } // Bottom Track: Lower down and slight angle
-                            : { top: '35%', transform: 'translateY(-50%) rotate(-5deg)' }; // Top Track: Higher up and flatter angle
+                            ? { top: '60%', transform: 'translateY(-50%) rotate(10deg)' } // Bottom Track
+                            : { top: '30%', transform: 'translateY(-50%) rotate(-5deg)' }; // Top Track
 
                         return (
-                            <img
+                            <motion.img
                                 key={i}
                                 src={`/problem-images/${safeSrc}.png`}
                                 style={{
                                     ...baseStyle,
                                     ...trackStyle,
+                                    transformOrigin: 'center',
                                 }}
                                 className="pointer-events-none z-10 select-none"
                                 alt=""
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.6, delay: isOption1 ? 2.0 : 1.5, type: "spring", bounce: 0.4 }}
                             />
                         );
                     })}
@@ -499,7 +501,7 @@ export default function TrolleyScene({ problem, votes, allProblems }: { problem:
                             {hoverState?.vote.choice && (
                                 <text
                                     x="600"
-                                    y={hoverState.vote.choice.toLowerCase() === 'pull' ? "180" : "400"}
+                                    y={hoverState.vote.choice.toLowerCase() === 'pull' ? "200" : "400"}
                                     textAnchor="middle"
                                     className="font-comic font-bold uppercase"
                                     style={{ fontSize: '42px', fill: 'white', stroke: 'black', strokeWidth: 3, paintOrder: 'stroke fill' }}
@@ -660,54 +662,48 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                 </filter>
             </defs>
 
-            <g stroke="black" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'url(#wobbly)' }}>
-                {/* GROUND LINE - REMOVED */}
-
-                {/* TRACKS */}
-                {/* Main Track Ties (Static Left part) - Dense spacing */}
-                {Array.from({ length: 12 }).map((_, i) => (
-                    <path key={`tie-main-${i}`} d={`M ${i * 25 - 50} 240 L ${i * 25 - 50} 310`} strokeWidth="2" />
-                ))}
-
-                {/* Pull Track Ties - Curved portion */}
+            {/* TRACKS - with pop-up animation */}
+            <motion.g
+                stroke="black"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ filter: 'url(#wobbly)', transformOrigin: 'center', transformBox: 'fill-box' }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.4 }}
+            >
+                {/* Main Track Ties (Diagonal Left part) */}
                 <TrackTies
-                    startT={0.05}
-                    endT={0.95}
-                    count={18}
-                    rail1={{ type: 'quad', p0: { x: 250, y: 250 }, p1: { x: 400, y: 250 }, p2: { x: 600, y: 150 } }}
-                    rail2={{ type: 'quad', p0: { x: 250, y: 300 }, p1: { x: 400, y: 300 }, p2: { x: 580, y: 190 } }}
-                />
-                {/* Pull Track Ties - Straight extension */}
-                <TrackTies
-                    startT={0.1}
-                    endT={1}
-                    count={8}
-                    rail1={{ type: 'line', p0: { x: 600, y: 150 }, p1: { x: 850, y: 150 } }}
-                    rail2={{ type: 'line', p0: { x: 580, y: 190 }, p1: { x: 850, y: 190 } }}
+                    startT={0.02}
+                    endT={0.98}
+                    count={20}
+                    rail1={{ type: 'line', p0: { x: -250, y: 100 }, p1: { x: 250, y: 250 } }}
+                    rail2={{ type: 'line', p0: { x: -250, y: 150 }, p1: { x: 250, y: 300 } }}
                 />
 
-                {/* Do Nothing Track Ties - Diverging curve (simplified to match bottom rail's quad) */}
+                {/* Pull Track Ties - Single smooth curve */}
                 <TrackTies
-                    startT={0.05}
-                    endT={0.95}
-                    count={15}
-                    rail1={{ type: 'quad', p0: { x: 250, y: 250 }, p1: { x: 450, y: 250 }, p2: { x: 550, y: 350 } }}
-                    rail2={{ type: 'quad', p0: { x: 250, y: 300 }, p1: { x: 400, y: 300 }, p2: { x: 500, y: 400 } }}
-                />
-                {/* Do Nothing Track Ties - Straight extension */}
-                <TrackTies
-                    startT={0.1}
-                    endT={1}
-                    count={10}
-                    rail1={{ type: 'line', p0: { x: 550, y: 350 }, p1: { x: 850, y: 400 } }}
-                    rail2={{ type: 'line', p0: { x: 500, y: 400 }, p1: { x: 850, y: 450 } }}
+                    startT={0.02}
+                    endT={0.98}
+                    count={20}
+                    rail1={{ type: 'cubic', p0: { x: 250, y: 250 }, p1: { x: 400, y: 250 }, p2: { x: 500, y: 150 }, p3: { x: 850, y: 150 } }}
+                    rail2={{ type: 'cubic', p0: { x: 250, y: 300 }, p1: { x: 400, y: 300 }, p2: { x: 480, y: 190 }, p3: { x: 850, y: 190 } }}
                 />
 
+                {/* Do Nothing Track Ties - Single smooth curve */}
+                <TrackTies
+                    startT={0.02}
+                    endT={0.98}
+                    count={20}
+                    rail1={{ type: 'cubic', p0: { x: 250, y: 250 }, p1: { x: 350, y: 250 }, p2: { x: 450, y: 350 }, p3: { x: 850, y: 400 } }}
+                    rail2={{ type: 'cubic', p0: { x: 250, y: 300 }, p1: { x: 350, y: 300 }, p2: { x: 400, y: 400 }, p3: { x: 850, y: 450 } }}
+                />
 
-                {/* Main Track Left (Rails) */}
-                <path d="M -50 250 L 250 250" />
-                <path d="M -50 300 L 250 300" />
-
+                {/* Main Track Left (Diagonal Rails) */}
+                <path d="M -250 100 L 250 250" />
+                <path d="M -250 150 L 250 300" />
 
                 {/* SWITCH POINT */}
                 {/* Top Path (Divert/Pull) -> Kills 1/Few - Single smooth curve */}
@@ -717,20 +713,38 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                 {/* Bottom Path (Straight/Nothing) -> Kills 5/Many - Single smooth curve */}
                 <path d="M 250 250 C 350 250, 450 350, 850 400" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
                 <path d="M 250 300 C 350 300, 400 400, 850 450" stroke={isNothing ? "#ef4444" : "black"} strokeWidth={isNothing ? 6 : 3} className="transition-all duration-300" />
+            </motion.g>
 
-                {/* TROLLEY */}
-                <g transform="translate(50, 200)" className="animate-rumble">
-                    <rect x="0" y="0" width="160" height="100" fill="white" strokeWidth="4" rx="5" />
-                    <path d="M -10 0 L 170 0 L 160 -20 L 10 -20 Z" fill="white" strokeWidth="3" />
-                    <rect x="20" y="20" width="30" height="40" fill="white" />
-                    <rect x="60" y="20" width="30" height="40" fill="white" />
-                    <rect x="100" y="20" width="30" height="40" fill="white" />
-                    <circle cx="40" cy="100" r="15" fill="white" strokeWidth="3" />
-                    <circle cx="120" cy="100" r="15" fill="white" strokeWidth="3" />
+            {/* TROLLEY - Using logo image with pop-up */}
+            <motion.g
+                style={{ transformOrigin: '40px 80px' }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 1.0, type: "spring", bounce: 0.5 }}
+            >
+                <g className="animate-rumble">
+                    <image
+                        href="/logo.png"
+                        x="-50"
+                        y="-90"
+                        width="180"
+                        height="150"
+                        preserveAspectRatio="xMidYMid meet"
+                    />
                 </g>
+            </motion.g>
 
-                {/* LEVER MAN */}
-                <g transform="translate(300, 320)">
+            {/* LEVER MAN with pop-up */}
+            <motion.g
+                stroke="black"
+                strokeWidth="3"
+                fill="none"
+                style={{ filter: 'url(#wobbly)', transformOrigin: 'center', transformBox: 'fill-box' }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 2.5, type: "spring", bounce: 0.4 }}
+            >
+                <g transform="translate(300, 380)">
                     {/* Head */}
                     <circle cx="0" cy="0" r="15" fill="white" />
                     {/* Body */}
@@ -738,7 +752,7 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                     {/* Legs */}
                     <path d="M 0 60 L -15 90" />
                     <path d="M 0 60 L 15 90" />
-                    {/* Arms - Animated based on hover */}
+                    {/* Arms */}
                     <path d="M 0 30 L -20 50" />
                     {/* Lever Arm */}
                     <path
@@ -759,23 +773,21 @@ function TrolleySVG({ hoveredChoice }: { hoveredChoice?: string }) {
                         />
                     </g>
                 </g>
-
-                {/* VICTIMS REMOVED - Dynamic content makes hardcoded stick figures inaccurate */}
-            </g>
+            </motion.g>
 
             <style>
                 {`
-                    .animate-rumble {
-                        animation: rumble 0.5s ease-in-out infinite alternate;
-                    }
-                    @keyframes rumble {
-                        from { transform: translate(50px, 200px) rotate(0deg); }
-                        to { transform: translate(50px, 198px) rotate(0.5deg); }
-                    }
-                    .ease-spring {
-                        transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    }
-                `}
+                .animate-rumble {
+                    animation: rumble 0.5s ease-in-out infinite alternate;
+                }
+                @keyframes rumble {
+                    from { transform: translate(50px, 200px) rotate(0deg); }
+                    to { transform: translate(50px, 198px) rotate(0.5deg); }
+                }
+                .ease-spring {
+                    transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                }
+            `}
             </style>
         </svg>
     );
@@ -787,7 +799,7 @@ type Point = { x: number, y: number };
 type RailDef =
     | { type: 'line', p0: Point, p1: Point }
     | { type: 'quad', p0: Point, p1: Point, p2: Point }
-    | { type: 'mix-line-quad', p0: Point, p1: Point, p2: Point, p3: Point };
+    | { type: 'cubic', p0: Point, p1: Point, p2: Point, p3: Point };
 
 function getPointOnRail(rail: RailDef, t: number): Point {
     if (rail.type === 'line') {
@@ -801,27 +813,17 @@ function getPointOnRail(rail: RailDef, t: number): Point {
             x: oneMinusT * oneMinusT * rail.p0.x + 2 * oneMinusT * t * rail.p1.x + t * t * rail.p2.x,
             y: oneMinusT * oneMinusT * rail.p0.y + 2 * oneMinusT * t * rail.p1.y + t * t * rail.p2.y
         };
-    } else if (rail.type === 'mix-line-quad') {
-        // Specifically for the odd straight-then-curve rail
-        // p0->p1 is LINE, then p1->p3 with p2 control is QUAD
-        // Let's approximate the split. 
-        // L(250,250)->(350,250) dist=100
-        // Q(350,250)->C(450,250)->(550,350). Approx length ~220?
-        // Let's simplified logic: map t 0-0.3 to Line, 0.3-1 to Quad
-        if (t < 0.3) {
-            const localT = t / 0.3;
-            return {
-                x: rail.p0.x + localT * (rail.p1.x - rail.p0.x),
-                y: rail.p0.y + localT * (rail.p1.y - rail.p0.y)
-            };
-        } else {
-            const localT = (t - 0.3) / 0.7;
-            const oneMinusT = 1 - localT;
-            return {
-                x: oneMinusT * oneMinusT * rail.p1.x + 2 * oneMinusT * localT * rail.p2.x + localT * localT * rail.p3.x,
-                y: oneMinusT * oneMinusT * rail.p1.y + 2 * oneMinusT * localT * rail.p2.y + localT * localT * rail.p3.y
-            };
-        }
+    } else if (rail.type === 'cubic') {
+        // Cubic Bezier: B(t) = (1-t)^3*P0 + 3*(1-t)^2*t*P1 + 3*(1-t)*t^2*P2 + t^3*P3
+        const oneMinusT = 1 - t;
+        const oneMinusT2 = oneMinusT * oneMinusT;
+        const oneMinusT3 = oneMinusT2 * oneMinusT;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        return {
+            x: oneMinusT3 * rail.p0.x + 3 * oneMinusT2 * t * rail.p1.x + 3 * oneMinusT * t2 * rail.p2.x + t3 * rail.p3.x,
+            y: oneMinusT3 * rail.p0.y + 3 * oneMinusT2 * t * rail.p1.y + 3 * oneMinusT * t2 * rail.p2.y + t3 * rail.p3.y
+        };
     }
     return { x: 0, y: 0 };
 }

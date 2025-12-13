@@ -58,7 +58,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
     const [showComparison, setShowComparison] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
-    const itemsPerPage = 10;
+    const itemsPerPage = 6;
 
     const [payloadContent, setPayloadContent] = useState<string | null>(null);
 
@@ -140,7 +140,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
         <div className="space-y-6" id="leaderboard-table">
             {/* Action Bar: Compare Button (Floating) */}
             <div className={`flex justify-end h-0 pointer-events-none relative z-20`}>
-                <div className={`absolute bottom-4 right-0 transition-all duration-300 pointer-events-auto ${selectedIds.size >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <div className={`absolute bottom-4 right-0 transition-all duration-300 ${selectedIds.size >= 2 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                     <button
                         onClick={() => setShowComparison(true)}
                         className="flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all uppercase tracking-widest font-comic"
@@ -156,7 +156,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                 <div className="p-4 md:p-6 border-b-4 border-black bg-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">🏆</span>
-                        <h2 className="font-black text-xl md:text-3xl uppercase tracking-wider italic transform -skew-x-6">Current Standings</h2>
+                        <h2 className="font-black text-xl md:text-3xl uppercase tracking-wider transform -skew-x-6">Current Standings</h2>
                     </div>
 
                     <div className="relative w-full md:w-96 group">
@@ -179,11 +179,11 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                     <table className="w-full text-left border-collapse font-comic">
                         <thead className="bg-zinc-50 border-b-4 border-black text-black">
                             <tr className="uppercase tracking-widest text-sm">
-                                <th className="p-2 md:p-6 font-black w-10 md:w-20 text-center border-r-2 border-black text-[10px] md:text-sm">Compare</th>
-                                <th className="p-2 md:p-6 font-black w-10 md:w-24 text-center border-r-2 border-black text-[10px] md:text-sm">Rank</th>
-                                <th className="p-2 md:p-6 font-black border-r-2 border-black text-[10px] md:text-sm">Decider</th>
-                                <th className="hidden md:table-cell p-6 font-black border-r-2 border-black">Model ID</th>
-                                <th className="p-2 md:p-6 font-black text-center text-[10px] md:text-sm">
+                                <th className="py-2 px-2 md:px-4 font-black w-10 md:w-20 text-center border-r-2 border-black text-[10px] md:text-sm">Compare</th>
+                                <th className="py-2 px-2 md:px-4 font-black w-10 md:w-24 text-center border-r-2 border-black text-[10px] md:text-sm">Rank</th>
+                                <th className="py-2 px-2 md:px-4 font-black border-r-2 border-black text-[10px] md:text-sm">Decider</th>
+                                <th className="hidden md:table-cell py-2 px-4 font-black border-r-2 border-black">Model ID</th>
+                                <th className="py-2 px-2 md:px-4 font-black text-center text-[10px] md:text-sm">
                                     <div className="flex items-center justify-center gap-1 md:gap-2">
                                         <span className="hidden md:inline">Alignment Rating</span>
                                         <span className="md:hidden">Align.</span>
@@ -198,7 +198,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                 <div className="inline-block bg-yellow-300 border-2 border-black px-2 py-1 mb-3 transform -rotate-1 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                                                     <strong className="text-black text-sm uppercase tracking-wider">Normalized Consensus</strong>
                                                 </div>
-                                                <p className="mb-4 text-sm">
+                                                <p className="mb-2 text-xs">
                                                     Measures how close the AI is to the <strong>Perfect Human Consensus</strong>.
                                                 </p>
                                                 <div className="bg-zinc-50 p-3 rounded-lg border-2 border-black space-y-2 mb-3">
@@ -298,7 +298,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                 onClick={() => toggleExpand(llm.id)}
                                                 className={`group cursor-pointer transition-all ${isExpanded ? 'bg-yellow-100' : 'hover:bg-yellow-50'} ${isSelected ? 'bg-green-50' : ''}`}
                                             >
-                                                <td className="p-2 md:p-6 text-center border-r-2 border-zinc-200 group-hover:border-black transition-colors">
+                                                <td className="py-1 px-2 md:px-4 text-center border-r-2 border-zinc-200 group-hover:border-black transition-colors">
                                                     <div
                                                         onClick={(e) => toggleSelection(llm.id, e)}
                                                         className={`w-5 h-5 md:w-6 md:h-6 rounded-lg border-2 mx-auto flex items-center justify-center transition-all shadow-[2px_2px_0px_rgba(0,0,0,0.2)] ${isSelected ? 'bg-green-400 border-black text-black' : 'bg-white border-black hover:scale-110'}`}
@@ -306,10 +306,10 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                         {isSelected && <span className="text-sm font-bold">✓</span>}
                                                     </div>
                                                 </td>
-                                                <td className="p-2 md:p-6 text-center font-black text-xl md:text-2xl border-r-2 border-zinc-200 group-hover:border-black">
+                                                <td className="py-1 px-2 md:px-4 text-center font-black text-xl md:text-2xl border-r-2 border-zinc-200 group-hover:border-black">
                                                     #{index + 1}
                                                 </td>
-                                                <td className="p-3 md:p-6 border-r-2 border-zinc-200 group-hover:border-black">
+                                                <td className="py-1 px-2 md:px-4 border-r-2 border-zinc-200 group-hover:border-black">
                                                     <div className="flex items-center gap-2 md:gap-3">
                                                         {llm.provider && (
                                                             <div className="w-6 h-6 md:w-8 md:h-8 relative shrink-0">
@@ -328,12 +328,12 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="hidden md:table-cell p-6 text-zinc-500 font-mono text-sm border-r-2 border-zinc-200 group-hover:border-black">
+                                                <td className="hidden md:table-cell py-1 px-4 text-zinc-500 font-mono text-sm border-r-2 border-zinc-200 group-hover:border-black">
                                                     {llm.modelId}
                                                 </td>
 
                                                 {/* Metric: Human Agreement with Detail */}
-                                                <td className="p-3 md:p-6 text-center">
+                                                <td className="py-1 px-2 md:px-4 text-center">
                                                     <div className="flex flex-col items-center gap-1">
                                                         <span className={clsx("font-black text-lg md:text-2xl", {
                                                             "text-green-600": alignmentRating >= 80,
