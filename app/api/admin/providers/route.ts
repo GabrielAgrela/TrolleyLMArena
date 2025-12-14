@@ -1,8 +1,10 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { withRateLimit, RATE_LIMITS } from '@/lib/withRateLimit';
 
-export async function GET(req: Request) {
+// GET: List all providers (standard rate limit)
+export const GET = withRateLimit(async () => {
     const session = await auth();
     if (!session) {
         return new NextResponse('Unauthorized', { status: 401 });
@@ -18,9 +20,10 @@ export async function GET(req: Request) {
         console.error('Error fetching providers:', error);
         return new NextResponse('Internal Server Error', { status: 500 });
     }
-}
+}, RATE_LIMITS.standard);
 
-export async function POST(req: Request) {
+// POST: Create provider (admin mutation rate limit)
+export const POST = withRateLimit(async (req: Request) => {
     const session = await auth();
     if (!session) {
         return new NextResponse('Unauthorized', { status: 401 });
@@ -47,9 +50,10 @@ export async function POST(req: Request) {
         console.error('Error creating provider:', error);
         return new NextResponse('Internal Server Error', { status: 500 });
     }
-}
+}, RATE_LIMITS.adminMutation);
 
-export async function PATCH(req: Request) {
+// PATCH: Update provider (admin mutation rate limit)
+export const PATCH = withRateLimit(async (req: Request) => {
     const session = await auth();
     if (!session) {
         return new NextResponse('Unauthorized', { status: 401 });
@@ -77,4 +81,4 @@ export async function PATCH(req: Request) {
         console.error('Error updating provider:', error);
         return new NextResponse('Internal Server Error', { status: 500 });
     }
-}
+}, RATE_LIMITS.adminMutation);

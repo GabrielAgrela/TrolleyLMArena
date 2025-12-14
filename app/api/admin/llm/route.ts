@@ -2,10 +2,13 @@
 import { NextResponse } from 'next/server';
 import { runLLM } from '@/lib/trolleyIterator';
 import { prisma } from '@/lib/prisma';
+import { withRateLimit, RATE_LIMITS } from '@/lib/withRateLimit';
+import { checkRateLimit, getClientIP } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+// GET: List all LLMs with rate limiting
+export const GET = withRateLimit(async () => {
     try {
         const llms = await prisma.lLM.findMany({
             orderBy: { createdAt: 'desc' },
@@ -25,9 +28,6 @@ export async function GET() {
             }
         });
 
-        // Transform to include missingTtsCount for cleaner frontend consumption if needed, 
-        // or just return as is and let frontend handle `_count.votes`.
-        // Let's return a flattened structure or just extend the type on frontend.
         const augmentedLLMs = llms.map(llm => ({
             ...llm,
             missingTtsCount: llm._count.votes,
@@ -38,9 +38,26 @@ export async function GET() {
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}
+}, RATE_LIMITS.standard);
 
+// POST: Create new LLM run (uses manual rate limiting for custom key)
 export async function POST(req: Request) {
+    const ip = getClientIP(req);
+    const { isLimited, remaining, resetAt } = checkRateLimit(`llm-post:${ip}`, RATE_LIMITS.adminMutation);
+
+    if (isLimited) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': resetAt.toString()
+                }
+            }
+        );
+    }
+
     try {
         const body = await req.json();
         const { modelId, name, reasoningEffort, providerId, createTts } = body;
@@ -52,13 +69,17 @@ export async function POST(req: Request) {
         // Trigger run in background
         runLLM(modelId, name, reasoningEffort, providerId, createTts).catch(console.error);
 
-        return NextResponse.json({ success: true, message: 'Run started' });
+        return NextResponse.json(
+            { success: true, message: 'Run started' },
+            { headers: { 'X-RateLimit-Remaining': remaining.toString() } }
+        );
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-export async function PATCH(req: Request) {
+// PATCH: Update LLM with rate limiting
+export const PATCH = withRateLimit(async (req: Request) => {
     try {
         const body = await req.json();
         const { id, name, providerId } = body;
@@ -71,7 +92,7 @@ export async function PATCH(req: Request) {
             where: { id },
             data: {
                 name: name || undefined,
-                providerId: providerId === null ? null : (providerId || undefined) // Handle explicit null to disconnect, or update
+                providerId: providerId === null ? null : (providerId || undefined)
             }
         });
 
@@ -80,4 +101,4 @@ export async function PATCH(req: Request) {
         console.error('Error updating LLM:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}
+}, RATE_LIMITS.adminMutation);

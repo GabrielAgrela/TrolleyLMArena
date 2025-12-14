@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import TrolleyScene from '@/components/TrolleyScene';
 
-export const dynamic = 'force-dynamic';
+// Revalidate browse page every 5 minutes (ISR)
+export const revalidate = 300;
 
 // Utility to get a random problem or a specific one
 async function getProblem(id?: string) {

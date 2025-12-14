@@ -37,6 +37,10 @@ model LLM {
   providerId String?
 
   votes     Vote[]
+
+  // Indexes for query performance
+  @@index([status])
+  @@index([providerId])
 }
 
 enum LLMStatus {
@@ -62,6 +66,9 @@ model Vote {
   audioUrl  String?
 
   @@unique([llmId, problemId])
+  // Indexes for query performance
+  @@index([llmId])
+  @@index([problemId])
 }
 
 model Provider {

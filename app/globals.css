@@ -1,28 +1,61 @@
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-zinc-950: #09090b;
 }
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+  --card-bg: rgba(255, 255, 255, 1);
+  --border-color: rgba(0, 0, 0, 0.2);
+  color-scheme: light;
 }
 
-body {
-  color: white;
-  background: black;
+.dark {
+  --foreground-rgb: 250, 250, 250;
+  --background-rgb: 9, 9, 11;
+  --card-bg: rgba(24, 24, 27, 1);
+  --border-color: rgba(255, 255, 255, 0.15);
+  color-scheme: dark;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  background: rgb(var(--background-rgb));
   min-height: 100vh;
+}
+
+/* Smooth transitions for theme switching - apply to common elements */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+/* Disable transitions for animations to prevent interference */
+.animate-pop-in,
+.animate-pop-in-delay-1,
+.animate-pop-in-delay-2,
+.animate-pop-in-delay-3,
+.animate-pop-in-delay-4 {
+  transition: none;
+}
+
+/* Disable ALL transitions for elements that flicker */
+.no-pseudo-transition,
+.no-pseudo-transition *,
+.no-pseudo-transition::before,
+.no-pseudo-transition::after,
+.no-pseudo-transition *::before,
+.no-pseudo-transition *::after {
+  transition: none !important;
 }
 
 @layer utilities {
@@ -30,6 +63,7 @@ body {
     text-wrap: balance;
   }
 }
+
 
 /* Custom Premium Styles */
 .glass-panel {
@@ -57,9 +91,11 @@ body {
     opacity: 0;
     transform: scale(0) translateY(20px);
   }
+
   70% {
     transform: scale(1.1) translateY(-5px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
