@@ -58,6 +58,21 @@ body {
   transition: none !important;
 }
 
+/* Let SVG elements handle their own transitions - reset global override */
+svg *:not(.transition-all),
+svg path:not(.transition-all),
+svg line:not(.transition-all),
+svg circle:not(.transition-all) {
+  transition-property: none;
+}
+
+/* Ensure SVG elements with transition-all work properly */
+svg .transition-all {
+  transition-property: all !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease-out !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -125,4 +140,19 @@ body {
 .animate-pop-in-delay-4 {
   animation: pop-in 0.4s ease-out 0.4s forwards;
   opacity: 0;
+}
+
+/* Rumble animation for trolley */
+@keyframes rumble {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(1deg) translateY(-2px);
+  }
+}
+
+.animate-rumble {
+  animation: rumble 0.5s ease-in-out infinite alternate;
 }

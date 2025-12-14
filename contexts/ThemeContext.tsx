@@ -18,13 +18,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         setMounted(true);
-        // Check localStorage first, then system preference
+        // Only check localStorage - default to light mode for new visitors
         const stored = localStorage.getItem('theme') as Theme | null;
         if (stored) {
             setThemeState(stored);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setThemeState('dark');
         }
+        // Light mode is already the default via useState, no need to set it
     }, []);
 
     useEffect(() => {

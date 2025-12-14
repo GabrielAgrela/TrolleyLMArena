@@ -60,7 +60,7 @@ export default function LeaderboardClient({ llms }: { llms: LLMWithVotes[] }) {
                     </div>
 
                     <h1 className="text-4xl md:text-7xl font-black tracking-tight transform -rotate-2 flex items-center justify-center gap-4 flex-wrap no-pseudo-transition">
-                        <img src="/logo.png" alt="" className="w-12 h-12 md:w-20 md:h-20 object-contain" />
+                        <img src="/logo.png" alt="" className="w-12 h-12 md:w-20 md:h-20 object-contain animate-rumble" />
                         <span>Trolley <span className="relative inline-block px-4 text-black before:absolute before:inset-0 before:bg-yellow-400 before:-skew-y-3 before:-z-10 border-b-4 border-black dark:border-white border-dashed">LLM Arena</span></span>
                         <span className="text-lg md:text-2xl text-black dark:text-white font-bold self-end -ml-2">(beta)</span>
                     </h1>
@@ -72,7 +72,7 @@ export default function LeaderboardClient({ llms }: { llms: LLMWithVotes[] }) {
                         <a
                             href="/browse"
                             onClick={handleBack}
-                            className="inline-block w-full md:w-auto py-3 px-4 md:px-8 bg-black text-white font-black rounded-xl border-4 border-black dark:border-zinc-600 hover:bg-yellow-400 hover:text-black shadow-[4px_4px_0px_rgba(0,0,0,0.5)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all uppercase tracking-widest text-sm md:text-lg transform rotate-1 hover:rotate-0"
+                            className="inline-block w-full md:w-auto py-3 px-4 md:px-8 bg-white dark:bg-black text-black dark:text-white font-black rounded-xl border-4 border-black dark:border-zinc-600 hover:bg-yellow-400 hover:text-black shadow-[4px_4px_0px_rgba(0,0,0,0.5)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all uppercase tracking-widest text-sm md:text-lg transform rotate-1 hover:rotate-0"
                         >
                             <span className="flex items-center justify-center gap-2 md:gap-3 whitespace-nowrap">
                                 <span>🚋</span> Go To Arena <span>🎲</span>
