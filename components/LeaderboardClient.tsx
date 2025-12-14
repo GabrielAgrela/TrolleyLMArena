@@ -83,7 +83,28 @@ export default function LeaderboardClient({ llms }: { llms: LLMWithVotes[] }) {
 
                 <LeaderboardTable llms={llms} />
 
-                <footer className="text-center text-zinc-500 dark:text-zinc-400 pt-12 font-bold border-t-2 border-zinc-100 dark:border-zinc-800 mt-12">
+                <footer className="text-center text-zinc-500 dark:text-zinc-400 pt-12 font-bold border-t-2 border-zinc-100 dark:border-zinc-800 mt-12 space-y-2">
+                    <p>
+                        Trolley problems & human data from{' '}
+                        <a
+                            href="https://neal.fun/absurd-trolley-problems/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-yellow-600 dark:text-yellow-400 hover:underline"
+                        >
+                            Absurd Trolley Problems
+                        </a>
+                        {' '}by{' '}
+                        <a
+                            href="https://neal.fun/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-yellow-600 dark:text-yellow-400 hover:underline"
+                        >
+                            Neal Agarwal
+                        </a>
+                        {' '}🎮
+                    </p>
                     <p>© 2025 Trolley LLM Arena. Built for science (and fun). 🧪</p>
                 </footer>
             </div>

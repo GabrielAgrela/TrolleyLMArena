@@ -2,6 +2,8 @@
 
 An interactive platform that evaluates Large Language Models (LLMs) by presenting them with variations of the classic "Trolley Problem" moral dilemma. Compare AI reasoning against human consensus in a comic-style interface.
 
+> 🎮 **Data Source**: All trolley problem scenarios and human voting data are from the brilliant [Absurd Trolley Problems](https://neal.fun/absurd-trolley-problems/) by [Neal Agarwal](https://neal.fun/). This project is a fan-made tool and is not affiliated with neal.fun.
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Prisma](https://img.shields.io/badge/Prisma-7-2D3748) ![Tailwind](https://img.shields.io/badge/Tailwind-4-38B2AC)
 
 ## ✨ Features
@@ -150,6 +152,13 @@ npm run test:run
 - **TTS**: ElevenLabs
 - **Testing**: Vitest + Testing Library
 
+## 🙏 Credits
+
+- **[Absurd Trolley Problems](https://neal.fun/absurd-trolley-problems/)** by [Neal Agarwal](https://neal.fun/) - The original source of all trolley problem scenarios and human voting data used in this project. Go play the original!
+- Built with Next.js, Prisma, and love for ethical AI research.
+
 ## 📄 License
 
 MIT
+
+*This project is not affiliated with neal.fun. All trolley problem content is used for educational/research purposes.*
