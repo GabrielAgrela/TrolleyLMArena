@@ -48,3 +48,11 @@ next-env.d.ts
 
 # Logs
 *.log
+
+# Generated/uploaded content (keep folders with .gitkeep)
+/public/audio/*
+!/public/audio/.gitkeep
+/public/files/*
+!/public/files/.gitkeep
+/public/problem-images/*
+!/public/problem-images/.gitkeep
