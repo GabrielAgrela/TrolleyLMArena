@@ -55,12 +55,9 @@ Visit `http://localhost:3000` to view the leaderboard, or `/browse` to explore p
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `DATABASE_URL` | PostgreSQL connection string | ✅ |
-| `OPENAI_API_KEY` | OpenAI API key | ✅ |
-| `OPENROUTER_API_KEY` | OpenRouter API key (for other models) | Optional |
+| `OPENROUTER_API_KEY` | OpenRouter API key for LLM calls | ✅ |
+| `NEXTAUTH_SECRET` | NextAuth secret for admin auth | ✅ |
 | `ELEVENLABS_API_KEY` | ElevenLabs API key for TTS | Optional |
-| `AUTH_SECRET` | NextAuth secret for admin auth | ✅ |
-| `AUTH_GITHUB_ID` | GitHub OAuth client ID | For admin |
-| `AUTH_GITHUB_SECRET` | GitHub OAuth client secret | For admin |
 
 ## 📁 Project Structure
 
