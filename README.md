@@ -114,8 +114,10 @@ Then run the seed script to sync with the database.
 3. **Optional: Add TTS voice** - Set `voiceId` in Provider to enable ElevenLabs TTS
 
 Supported models via OpenRouter:
-- OpenAI (gpt-4, gpt-4o, o1, etc.)
-- OpenRouter (Claude, Gemini, Llama, etc.)
+- OpenAI (GPT-4, GPT-4o, o1, etc.)
+- Anthropic (Claude 3.5, Claude 3, etc.)
+- Google (Gemini Pro, Gemini Flash, etc.)
+- Meta (Llama 3, etc.)
 
 ## 🧪 Testing
 
