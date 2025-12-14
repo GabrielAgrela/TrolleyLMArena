@@ -21,7 +21,7 @@ An interactive platform that evaluates Large Language Models (LLMs) by presentin
 
 - Node.js 20+
 - PostgreSQL database
-- OpenAI/OpenRouter API key
+- OpenRouter API key
 - (Optional) ElevenLabs API key for TTS
 
 ### Installation
@@ -113,7 +113,7 @@ Then run the seed script to sync with the database.
    - Add API configuration for new providers
 3. **Optional: Add TTS voice** - Set `voiceId` in Provider to enable ElevenLabs TTS
 
-Supported model APIs:
+Supported models via OpenRouter:
 - OpenAI (gpt-4, gpt-4o, o1, etc.)
 - OpenRouter (Claude, Gemini, Llama, etc.)
 
@@ -145,7 +145,7 @@ npm run test:run
 - **Styling**: Tailwind CSS 4
 - **Animation**: Framer Motion
 - **Auth**: NextAuth.js
-- **AI**: OpenAI SDK, OpenRouter
+- **AI**: OpenRouter (access to OpenAI, Claude, Gemini, etc.)
 - **TTS**: ElevenLabs
 - **Testing**: Vitest + Testing Library
 
