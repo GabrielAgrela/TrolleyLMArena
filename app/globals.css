@@ -156,3 +156,88 @@ svg .transition-all {
 .animate-rumble {
   animation: rumble 0.5s ease-in-out infinite alternate;
 }
+
+/* Custom Scrollbar Styles - Hand-Drawn Sketch Theme */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #000 #fff;
+}
+
+*::-webkit-scrollbar {
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-left: 3px solid #000;
+  border-top: 3px solid #000;
+  /* For horizontal scrollbars */
+}
+
+.dark *::-webkit-scrollbar {
+  background-color: #09090b;
+  border-left-color: #fff;
+  border-top-color: #fff;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  /* Sketchy Hatching Pattern */
+  background-color: #fff;
+  background-image: repeating-linear-gradient(45deg,
+      #000 0px,
+      #000 2px,
+      transparent 2px,
+      transparent 6px);
+  border: 3px solid #000;
+  border-radius: 0;
+  /* "Shadow" for depth */
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover: Denser hatching or inversion */
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #fef08a;
+  /* Yellow highlight background */
+  background-image: repeating-linear-gradient(45deg,
+      #000 0px,
+      #000 3px,
+      transparent 3px,
+      transparent 6px);
+}
+
+/* Horizontal scroll adjustment */
+*::-webkit-scrollbar-thumb:horizontal {
+  background-image: repeating-linear-gradient(-45deg,
+      #000 0px,
+      #000 2px,
+      transparent 2px,
+      transparent 6px);
+}
+
+/* Dark Mode Overrides */
+.dark *::-webkit-scrollbar-thumb {
+  border-color: #fff;
+  background-color: #09090b;
+  /* Dark background */
+  background-image: repeating-linear-gradient(45deg,
+      #fff 0px,
+      #fff 2px,
+      transparent 2px,
+      transparent 6px);
+  /* White hatching */
+  box-shadow: 2px 2px 0px rgba(255, 255, 255, 0.2);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: #facc15;
+  /* Yellow background */
+  background-image: repeating-linear-gradient(45deg,
+      #000 0px,
+      #000 2px,
+      transparent 2px,
+      transparent 6px);
+  /* Canvas switches to black hatching on yellow */
+  border-color: #facc15;
+}

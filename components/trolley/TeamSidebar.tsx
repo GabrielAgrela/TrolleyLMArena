@@ -63,13 +63,13 @@ type TeamSidebarProps = {
 
 export default function TeamSidebar({ pullers, bystanders, onHover }: TeamSidebarProps) {
     return (
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
             {/* Pullers Group */}
-            <div className="bg-green-50/50 dark:bg-green-950/30 rounded-xl p-3 border-2 border-green-200 dark:border-green-800">
-                <div className="text-xs font-bold uppercase tracking-widest text-green-700 dark:text-green-400 mb-3 font-comic flex items-center gap-2 border-b border-green-200 dark:border-green-800 pb-2">
+            <div className="flex-1 min-h-0 bg-green-50/50 dark:bg-green-950/30 rounded-xl border-2 border-green-200 dark:border-green-800 flex flex-col">
+                <div className="text-xs font-bold uppercase tracking-widest text-green-700 dark:text-green-400 font-comic flex items-center gap-2 border-b border-green-200 dark:border-green-800 p-3 shrink-0">
                     <span>✅</span> Team Pull ({pullers.length})
                 </div>
-                <div className="space-y-1">
+                <div className="flex-1 overflow-y-auto p-3 pt-2 space-y-1">
                     {pullers.map(vote => (
                         <VoteItem key={vote.id} vote={vote} onHover={onHover} />
                     ))}
@@ -77,11 +77,11 @@ export default function TeamSidebar({ pullers, bystanders, onHover }: TeamSideba
             </div>
 
             {/* Bystanders Group */}
-            <div className="bg-red-50/50 dark:bg-red-950/30 rounded-xl p-3 border-2 border-red-200 dark:border-red-800">
-                <div className="text-xs font-bold uppercase tracking-widest text-red-700 dark:text-red-400 mb-3 font-comic flex items-center gap-2 border-b border-red-200 dark:border-red-800 pb-2">
+            <div className="flex-1 min-h-0 bg-red-50/50 dark:bg-red-950/30 rounded-xl border-2 border-red-200 dark:border-red-800 flex flex-col">
+                <div className="text-xs font-bold uppercase tracking-widest text-red-700 dark:text-red-400 font-comic flex items-center gap-2 border-b border-red-200 dark:border-red-800 p-3 shrink-0">
                     <span>🛑</span> Team Do Nothing ({bystanders.length})
                 </div>
-                <div className="space-y-1">
+                <div className="flex-1 overflow-y-auto p-3 pt-2 space-y-1">
                     {bystanders.map(vote => (
                         <VoteItem key={vote.id} vote={vote} onHover={onHover} />
                     ))}
