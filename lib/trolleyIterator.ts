@@ -50,7 +50,14 @@ Reply ONLY with JSON in the following format:
             body.reasoning_effort = llm.reasoningEffort;
         }
 
+        console.log(`Sending request for problem ${problem.id} (${llm.modelId})...`);
         const completion = await openai.chat.completions.create(body);
+
+        // Validate that we have a valid response with choices
+        if (!completion.choices || completion.choices.length === 0) {
+            console.error(`Model ${llm.modelId} returned no choices. Full response:`, JSON.stringify(completion, null, 2));
+            throw new Error(`API returned no choices for model ${llm.modelId}`);
+        }
 
         const apiChoice = completion.choices[0];
 
@@ -133,8 +140,8 @@ Reply ONLY with JSON in the following format:
             return;
         }
 
-        console.error(`Failed problem ${problem.id} for ${llm.modelId}`, err);
-        // Do NOT re-throw general errors so the loop continues
+        // Re-throw error so retry wrapper can handle it
+        throw err;
     }
 }
 
@@ -194,6 +201,93 @@ export async function updateLLMStats(llmId: string) {
     });
 }
 
+// Configuration for parallel execution and retries
+const CONCURRENCY_LIMIT = 30; // Number of parallel requests
+const MAX_RETRIES = 5;
+const INITIAL_RETRY_DELAY_MS = 1000; // 1 second
+
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Wrapper that adds retry logic to runSingleProblem
+async function runSingleProblemWithRetry(
+    llm: any,
+    problem: any,
+    createTts: boolean = false
+): Promise<{ success: boolean; shouldStop: boolean }> {
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            await runSingleProblem(llm, problem, createTts);
+            return { success: true, shouldStop: false };
+        } catch (err: any) {
+            lastError = err;
+
+            // If LLM was deleted, stop immediately
+            if (err.code === 'P2003') {
+                return { success: false, shouldStop: true };
+            }
+
+            // Don't retry on duplicate vote - it's already done
+            if (err.code === 'P2002') {
+                return { success: true, shouldStop: false };
+            }
+
+            // Calculate delay with exponential backoff
+            const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+
+            if (attempt < MAX_RETRIES) {
+                console.log(`Retry ${attempt}/${MAX_RETRIES} for problem ${problem.id} (${llm.modelId}) after ${delayMs}ms...`);
+                await delay(delayMs);
+                console.log(`Starting retry attempt ${attempt + 1} for problem ${problem.id}...`);
+            }
+        }
+    }
+
+    console.error(`Failed problem ${problem.id} for ${llm.modelId} after ${MAX_RETRIES} retries:`, lastError?.message || lastError);
+    return { success: false, shouldStop: false };
+}
+
+// Pool-based parallel executor with staggered start
+async function runWithConcurrency<T, R>(
+    items: T[],
+    concurrency: number,
+    fn: (item: T) => Promise<R>,
+    shouldStop: () => boolean,
+    staggerDelayMs: number = 1000 // Delay between starting each worker
+): Promise<R[]> {
+    const results: R[] = [];
+    let index = 0;
+
+    async function worker(): Promise<void> {
+        while (index < items.length && !shouldStop()) {
+            const currentIndex = index++;
+            const item = items[currentIndex];
+            const result = await fn(item);
+            results[currentIndex] = result;
+        }
+    }
+
+    // Start workers with staggered delay
+    const numWorkers = Math.min(concurrency, items.length);
+    const workerPromises: Promise<void>[] = [];
+
+    for (let i = 0; i < numWorkers; i++) {
+        // Stagger each worker start by delayMs
+        const startDelay = i * staggerDelayMs;
+        const workerPromise = delay(startDelay).then(() => {
+            if (!shouldStop()) {
+                return worker();
+            }
+        });
+        workerPromises.push(workerPromise);
+    }
+
+    await Promise.all(workerPromises);
+    return results;
+}
+
 export async function runLLM(modelId: string, name: string, reasoningEffort?: string, providerId?: string, createTts: boolean = false) {
     console.log(`Starting run for ${modelId} with effort ${reasoningEffort || 'default'} and provider ${providerId}`);
 
@@ -208,6 +302,8 @@ export async function runLLM(modelId: string, name: string, reasoningEffort?: st
         },
     });
 
+    let stopRun = false;
+
     try {
         // 2. Fetch all problems
         const problems = await prisma.problem.findMany();
@@ -218,15 +314,25 @@ export async function runLLM(modelId: string, name: string, reasoningEffort?: st
             data: { totalProblems: problems.length }
         });
 
-        for (const problem of problems) {
-            try {
-                await runSingleProblem(llm, problem, createTts);
-            } catch (err: any) {
-                if (err.code === 'P2003') {
+        console.log(`Running ${problems.length} problems with concurrency ${CONCURRENCY_LIMIT}...`);
+
+        // Run problems in parallel with concurrency limit
+        await runWithConcurrency(
+            problems,
+            CONCURRENCY_LIMIT,
+            async (problem) => {
+                const result = await runSingleProblemWithRetry(llm, problem, createTts);
+                if (result.shouldStop) {
+                    stopRun = true;
                     console.log(`Run stopped for ${modelId} because LLM was deleted.`);
-                    return; // Stop run
                 }
-            }
+                return result;
+            },
+            () => stopRun
+        );
+
+        if (stopRun) {
+            return; // LLM was deleted mid-run
         }
 
         await updateLLMStats(llm.id);
@@ -237,6 +343,8 @@ export async function runLLM(modelId: string, name: string, reasoningEffort?: st
                 status: 'COMPLETED',
             },
         });
+
+        console.log(`Completed run for ${modelId}`);
 
     } catch (error: any) {
         // Ignore P2025 (Record not found) if we try to update a deleted LLM

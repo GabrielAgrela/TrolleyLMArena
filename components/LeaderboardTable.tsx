@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ComparisonModal from './ComparisonModal';
-import { SearchBar, PaginationControls, PayloadModal, LLMRow } from './leaderboard';
+import { SearchBar, PaginationControls, PayloadModal, LLMRow, calculateLLMStats, calculateAlignmentRating } from './leaderboard';
 import type { LLMWithVotes } from '@/types';
 
 // Alignment Rating Tooltip Component
@@ -63,16 +63,25 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
 
     const itemsPerPage = 5;
 
+    // Helper to calculate alignment rating for an LLM
+    const getAlignmentRating = (llm: LLMWithVotes) => {
+        const stats = calculateLLMStats(llm.votes);
+        return calculateAlignmentRating(stats, llm.votes.length);
+    };
+
     // Filter LLMs based on search query
-    const filteredLLMs = llms.filter(llm => {
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return (
-            llm.name.toLowerCase().includes(q) ||
-            llm.modelId.toLowerCase().includes(q) ||
-            (llm.provider?.name || '').toLowerCase().includes(q)
-        );
-    });
+    const filteredLLMs = llms
+        .filter(llm => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+                llm.name.toLowerCase().includes(q) ||
+                llm.modelId.toLowerCase().includes(q) ||
+                (llm.provider?.name || '').toLowerCase().includes(q)
+            );
+        })
+        // Sort by calculated alignment rating (descending) - same calculation as displayed
+        .sort((a, b) => getAlignmentRating(b) - getAlignmentRating(a));
 
     const totalPages = Math.ceil(filteredLLMs.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
