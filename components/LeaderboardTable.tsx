@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import ComparisonModal from './ComparisonModal';
 import { SearchBar, PaginationControls, PayloadModal, LLMRow, calculateLLMStats, calculateAlignmentRating } from './leaderboard';
 import type { LLMWithVotes } from '@/types';
@@ -14,7 +14,7 @@ function AlignmentTooltip() {
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                 </svg>
             </span>
-            <div className="absolute top-full right-0 mt-4 w-80 p-6 bg-white dark:bg-zinc-800 text-black dark:text-white text-xs font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-[8px_8px_0px_rgba(0,0,0,1)] border-4 border-black dark:border-zinc-600 leading-relaxed text-left font-comic">
+            <div className="absolute top-full right-0 mt-2 w-80 p-6 bg-white dark:bg-zinc-800 text-black dark:text-white text-xs font-bold rounded-xl opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none z-50 shadow-[8px_8px_0px_rgba(0,0,0,1)] border-4 border-black dark:border-zinc-600 leading-relaxed text-left font-comic origin-top">
                 <p className="mb-2 text-xs">
                     Measures how close the AI is to the <strong>Perfect Human Consensus</strong>.
                 </p>
@@ -63,15 +63,17 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
 
     const itemsPerPage = 5;
 
-    // Helper to calculate alignment rating for an LLM
-    const getAlignmentRating = (llm: LLMWithVotes) => {
-        const stats = calculateLLMStats(llm.votes);
-        return calculateAlignmentRating(stats, llm.votes.length);
-    };
+    // Pre-calculate alignment ratings for all LLMs and sort by rating (descending)
+    const sortedAndFilteredLLMs = useMemo(() => {
+        // Calculate ratings for each LLM
+        const llmsWithRatings = llms.map(llm => {
+            const stats = calculateLLMStats(llm.votes);
+            const rating = calculateAlignmentRating(stats, llm.votes.length);
+            return { llm, rating };
+        });
 
-    // Filter LLMs based on search query
-    const filteredLLMs = llms
-        .filter(llm => {
+        // Filter by search query
+        const filtered = llmsWithRatings.filter(({ llm }) => {
             if (!searchQuery) return true;
             const q = searchQuery.toLowerCase();
             return (
@@ -79,14 +81,18 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                 llm.modelId.toLowerCase().includes(q) ||
                 (llm.provider?.name || '').toLowerCase().includes(q)
             );
-        })
-        // Sort by calculated alignment rating (descending) - same calculation as displayed
-        .sort((a, b) => getAlignmentRating(b) - getAlignmentRating(a));
+        });
 
-    const totalPages = Math.ceil(filteredLLMs.length / itemsPerPage);
+        // Sort by calculated alignment rating (descending)
+        filtered.sort((a, b) => b.rating - a.rating);
+
+        return filtered.map(({ llm }) => llm);
+    }, [llms, searchQuery]);
+
+    const totalPages = Math.ceil(sortedAndFilteredLLMs.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentLLMs = filteredLLMs.slice(indexOfFirstItem, indexOfLastItem);
+    const currentLLMs = sortedAndFilteredLLMs.slice(indexOfFirstItem, indexOfLastItem);
     const selectedLLMs = llms.filter(llm => selectedIds.has(llm.id));
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,9 +136,9 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-zinc-700 rounded-3xl overflow-hidden shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_rgba(0,0,0,0.8)]">
+            <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-zinc-700 rounded-3xl shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_rgba(0,0,0,0.8)]">
                 {/* Header & Search */}
-                <div className="p-4 md:p-6 border-b-4 border-black dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="p-4 md:p-6 border-b-4 border-black dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4 rounded-t-[1.25rem]">
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">🏆</span>
                         <h2 className="font-black text-xl md:text-3xl uppercase tracking-wider transform -skew-x-6">Current Standings</h2>
@@ -141,7 +147,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div>
                     <table className="w-full text-left border-collapse font-comic">
                         <thead className="bg-zinc-50 dark:bg-zinc-800 border-b-4 border-black dark:border-zinc-700 text-black dark:text-white">
                             <tr className="uppercase tracking-widest text-sm">
@@ -158,7 +164,7 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y-2 divide-dashed divide-zinc-300 dark:divide-zinc-700">
+                        <tbody key={currentPage} className="divide-y-2 divide-dashed divide-zinc-300 dark:divide-zinc-700 animate-page-fade">
                             {currentLLMs.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold text-xl">

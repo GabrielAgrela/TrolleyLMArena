@@ -64,9 +64,8 @@ export default function LeaderboardClient({ llms }: { llms: LLMWithVotes[] }) {
                         <span>Trolley <span className="relative inline-block px-4 text-black before:absolute before:inset-0 before:bg-yellow-400 before:-skew-y-3 before:-z-10 border-b-4 border-black dark:border-white border-dashed">LLM Arena</span></span>
                         <span className="text-lg md:text-2xl text-black dark:text-white font-bold self-end -ml-2">(beta)</span>
                     </h1>
-                    <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-bold">
-                        "Viewing the morality of Artificial Intelligence through the lens of
-                        the data-driven Trolley Problem."
+                    <p className="text-xl md:text-lxl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-bold">
+                        "Viewing the morality of Artificial Intelligence through the lens of the data-driven Trolley Problem."
                     </p>
                     <div className="pt-4 relative z-10">
                         <a
@@ -83,7 +82,7 @@ export default function LeaderboardClient({ llms }: { llms: LLMWithVotes[] }) {
 
                 <LeaderboardTable llms={llms} />
 
-                <footer className="text-center text-zinc-500 dark:text-zinc-400 pt-12 font-bold border-t-2 border-zinc-100 dark:border-zinc-800 mt-12 space-y-2">
+                <footer className="text-center text-zinc-500 dark:text-zinc-400 pt-6 font-bold border-t-2 border-zinc-100 dark:border-zinc-800 mt-6 space-y-2">
                     <p>
                         Trolley problems & human data from{' '}
                         <a

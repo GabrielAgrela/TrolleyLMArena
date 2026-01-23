@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { clsx } from 'clsx';
 import { VoteCard } from './index';
 import type { LLMWithVotes, LLMStats } from '@/types';
@@ -66,6 +66,7 @@ export default function LLMRow({
     onToggleSelect,
     onViewPayload
 }: LLMRowProps) {
+    const [imageError, setImageError] = useState(false);
     const stats = calculateLLMStats(llm.votes);
     const alignmentRating = calculateAlignmentRating(stats, llm.votes.length);
 
@@ -93,9 +94,14 @@ export default function LLMRow({
                 {/* Decider */}
                 <td className={`py-1 px-2 md:px-4 border-r-2 border-zinc-200 dark:border-zinc-700 group-hover:border-black dark:group-hover:border-zinc-400 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/20 transition-colors ${isExpanded ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''} ${isSelected ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
                     <div className="flex items-center gap-2 md:gap-3">
-                        {llm.provider && (
+                        {llm.provider && !imageError && llm.provider.logoUrl && (
                             <div className="w-6 h-6 md:w-8 md:h-8 relative shrink-0">
-                                <img src={llm.provider.logoUrl} alt={llm.provider.name} className="w-full h-full object-contain" />
+                                <img
+                                    src={llm.provider.logoUrl}
+                                    alt={llm.provider.name}
+                                    className="w-full h-full object-contain"
+                                    onError={() => setImageError(true)}
+                                />
                             </div>
                         )}
                         <span className="font-bold text-base md:text-xl line-clamp-1">{llm.name}</span>
@@ -113,21 +119,21 @@ export default function LLMRow({
                 </td>
 
                 {/* Alignment Rating */}
-                <td className={`py-1 px-2 md:px-4 text-center group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/20 transition-colors ${isExpanded ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''} ${isSelected ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
-                    <div className="flex flex-col items-center gap-1">
-                        <span className={clsx("font-black text-lg md:text-2xl", {
+                <td className={`py-2 px-2 md:px-4 text-center group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/20 transition-colors ${isExpanded ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''} ${isSelected ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
+                    <div className="flex items-center justify-center gap-2">
+                        <span className={clsx("font-black text-lg md:text-xl transition-all duration-200", {
                             "text-green-600 dark:text-green-400": alignmentRating >= 80,
                             "text-yellow-600 dark:text-yellow-400": alignmentRating >= 60 && alignmentRating < 80,
                             "text-red-600 dark:text-red-400": alignmentRating < 60,
                         })}>
                             {alignmentRating.toFixed(1)}
                         </span>
-                        <div className="w-16 md:w-32 h-2 md:h-4 bg-white dark:bg-zinc-700 border md:border-2 border-black dark:border-zinc-500 rounded-full overflow-hidden relative shadow-[1px_1px_0px_rgba(0,0,0,0.2)] md:shadow-[2px_2px_0px_rgba(0,0,0,0.2)]">
-                            <div className="h-full bg-green-400 border-r md:border-r-2 border-black dark:border-green-600" style={{ width: `${alignmentRating}%` }} />
+                        <div className="relative w-0 group-hover:w-20 md:group-hover:w-28 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden transition-all duration-300 ease-out opacity-0 group-hover:opacity-100 scale-x-0 group-hover:scale-x-100 origin-left">
+                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${alignmentRating}%` }} />
+                            <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-zinc-700 dark:text-zinc-200 whitespace-nowrap">
+                                {stats.consensusHits}/{llm.votes.length} aligned
+                            </span>
                         </div>
-                        <span className="text-[8px] md:text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                            {stats.consensusHits}/{llm.votes.length} <span className="hidden md:inline">Aligned problems</span><span className="md:hidden">hits</span>
-                        </span>
                     </div>
                 </td>
             </tr>

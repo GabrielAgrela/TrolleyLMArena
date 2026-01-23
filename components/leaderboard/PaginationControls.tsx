@@ -26,7 +26,7 @@ export default function PaginationControls({ currentPage, totalPages, onPageChan
     if (totalPages <= 1) return null;
 
     return (
-        <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 border-t-4 border-black dark:border-zinc-700 gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 border-t-4 border-black dark:border-zinc-700 gap-4 rounded-b-[1.25rem]">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}

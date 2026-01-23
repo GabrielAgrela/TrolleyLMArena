@@ -39,6 +39,14 @@ body {
   transition-timing-function: ease-out;
 }
 
+/* Allow full transitions for elements that explicitly request it */
+.transition-all,
+[class*="group-hover:w-"],
+[class*="group-hover:opacity-"],
+[class*="group-hover:scale-"] {
+  transition-property: all !important;
+}
+
 /* Disable transitions for animations to prevent interference */
 .animate-pop-in,
 .animate-pop-in-delay-1,
@@ -77,6 +85,19 @@ svg .transition-all {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Hide scrollbar while keeping scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+  }
 }
 
 
@@ -98,6 +119,23 @@ svg .transition-all {
 
 .font-comic {
   font-family: var(--font-comic-neue), 'Comic Sans MS', sans-serif;
+}
+
+/* Page transition animation */
+@keyframes page-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-fade {
+  animation: page-fade 0.25s ease-out forwards;
 }
 
 /* Pop-in animation for scene elements */
