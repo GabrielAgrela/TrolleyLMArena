@@ -64,11 +64,18 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
     const itemsPerPage = 5;
 
     // Pre-calculate alignment ratings for all LLMs and sort by rating (descending)
-    const sortedAndFilteredLLMs = useMemo(() => {
+    const { sortedAndFilteredLLMs, minRating, maxRating } = useMemo(() => {
+        let minR = 100;
+        let maxR = 0;
+
         // Calculate ratings for each LLM
         const llmsWithRatings = llms.map(llm => {
             const stats = calculateLLMStats(llm.votes);
             const rating = calculateAlignmentRating(stats, llm.votes.length);
+            if (llm.votes.length > 0) {
+                minR = Math.min(minR, rating);
+                maxR = Math.max(maxR, rating);
+            }
             return { llm, rating };
         });
 
@@ -86,7 +93,11 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
         // Sort by calculated alignment rating (descending)
         filtered.sort((a, b) => b.rating - a.rating);
 
-        return filtered.map(({ llm }) => llm);
+        return {
+            sortedAndFilteredLLMs: filtered.map(({ llm }) => llm),
+            minRating: minR > maxR ? 0 : minR,
+            maxRating: maxR < minR ? 100 : maxR
+        };
     }, [llms, searchQuery]);
 
     const totalPages = Math.ceil(sortedAndFilteredLLMs.length / itemsPerPage);
@@ -182,6 +193,8 @@ export default function LeaderboardTable({ llms }: { llms: LLMWithVotes[] }) {
                                         onToggleExpand={() => setExpandedId(expandedId === llm.id ? null : llm.id)}
                                         onToggleSelect={(e) => toggleSelection(llm.id, e)}
                                         onViewPayload={setPayloadContent}
+                                        minRating={minRating}
+                                        maxRating={maxRating}
                                     />
                                 ))
                             )}

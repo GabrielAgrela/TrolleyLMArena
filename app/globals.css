@@ -98,6 +98,23 @@ svg .transition-all {
     display: none;
     /* Chrome, Safari and Opera */
   }
+
+  /* Dynamic Rating Colors */
+  .text-rating {
+    color: hsl(var(--rating-hue, 120), 80%, 45%);
+  }
+
+  .dark .text-rating {
+    color: hsl(var(--rating-hue, 120), 80%, 65%);
+  }
+
+  .bg-rating {
+    background-color: hsl(var(--rating-hue, 120), 80%, 45%);
+  }
+
+  .dark .bg-rating {
+    background-color: hsl(var(--rating-hue, 120), 80%, 65%);
+  }
 }
 
 

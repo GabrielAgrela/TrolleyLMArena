@@ -1,7 +1,6 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { clsx } from 'clsx';
 import { VoteCard } from './index';
 import type { LLMWithVotes, LLMStats } from '@/types';
 
@@ -55,6 +54,8 @@ type LLMRowProps = {
     onToggleExpand: () => void;
     onToggleSelect: (e: React.MouseEvent) => void;
     onViewPayload: (payload: string) => void;
+    minRating: number;
+    maxRating: number;
 };
 
 export default function LLMRow({
@@ -64,11 +65,17 @@ export default function LLMRow({
     isSelected,
     onToggleExpand,
     onToggleSelect,
-    onViewPayload
+    onViewPayload,
+    minRating,
+    maxRating
 }: LLMRowProps) {
     const [imageError, setImageError] = useState(false);
     const stats = calculateLLMStats(llm.votes);
     const alignmentRating = calculateAlignmentRating(stats, llm.votes.length);
+
+    // Normalize rating from 0-100 based on the current data boundaries, default to 100 if we can't determine it
+    const normalizedRating = maxRating > minRating ? ((alignmentRating - minRating) / (maxRating - minRating)) * 100 : 100;
+    const ratingHue = Math.max(0, Math.min(120, normalizedRating * 1.2));
 
     return (
         <Fragment>
@@ -120,16 +127,12 @@ export default function LLMRow({
 
                 {/* Alignment Rating */}
                 <td className={`py-2 px-2 md:px-4 text-center group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/20 transition-colors ${isExpanded ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''} ${isSelected ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
-                    <div className="flex items-center justify-center gap-2">
-                        <span className={clsx("font-black text-lg md:text-xl transition-all duration-200", {
-                            "text-green-600 dark:text-green-400": alignmentRating >= 80,
-                            "text-yellow-600 dark:text-yellow-400": alignmentRating >= 60 && alignmentRating < 80,
-                            "text-red-600 dark:text-red-400": alignmentRating < 60,
-                        })}>
+                    <div className="flex items-center justify-center gap-2" style={{ '--rating-hue': ratingHue } as React.CSSProperties}>
+                        <span className="font-black text-lg md:text-xl transition-all duration-200 text-rating">
                             {alignmentRating.toFixed(1)}
                         </span>
                         <div className="relative w-0 group-hover:w-20 md:group-hover:w-28 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden transition-all duration-300 ease-out opacity-0 group-hover:opacity-100 scale-x-0 group-hover:scale-x-100 origin-left">
-                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${alignmentRating}%` }} />
+                            <div className="h-full bg-rating rounded-full transition-colors duration-300" style={{ width: `${alignmentRating}%` }} />
                             <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-zinc-700 dark:text-zinc-200 whitespace-nowrap">
                                 {stats.consensusHits}/{llm.votes.length} aligned
                             </span>
