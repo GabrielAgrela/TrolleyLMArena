@@ -83,9 +83,20 @@ Reply ONLY with JSON in the following format:
         }
 
         const choice = choiceData.choice?.toLowerCase().includes('pull') ? 'pull' : 'nothing';
-        const reasoning = choiceData.reasoning || 'No reasoning provided';
-        const principles = Array.isArray(choiceData.principles) ? choiceData.principles : [];
-        const assumptions = choiceData.assumptions || null;
+        const reasoning = String(choiceData.reasoning || 'No reasoning provided');
+
+        let principles: string[] = [];
+        if (Array.isArray(choiceData.principles)) {
+            principles = choiceData.principles.map((p: any) => String(p));
+        } else if (typeof choiceData.principles === 'string') {
+            principles = [choiceData.principles];
+        } else if (choiceData.principles && typeof choiceData.principles === 'object') {
+            principles = Object.values(choiceData.principles).map((p: any) => String(p));
+        }
+        let assumptions = choiceData.assumptions || null;
+        if (assumptions !== null && typeof assumptions !== 'string') {
+            assumptions = String(Array.isArray(assumptions) ? assumptions.join(' ') : assumptions);
+        }
 
         // TTS Generation
         let audioUrl = null;
@@ -245,7 +256,7 @@ async function runSingleProblemWithRetry(
         }
     }
 
-    console.error(`Failed problem ${problem.id} for ${llm.modelId} after ${MAX_RETRIES} retries:`, lastError?.message || lastError);
+    console.error(`Failed problem ${problem.id} for ${llm.modelId} after ${MAX_RETRIES} retries:`, lastError);
     return { success: false, shouldStop: false };
 }
 
